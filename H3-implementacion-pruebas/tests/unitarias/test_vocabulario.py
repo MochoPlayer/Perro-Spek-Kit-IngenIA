@@ -30,6 +30,42 @@ def test_parar(interprete, frase):
     assert comandos(interprete.interpretar(f"Perro, {frase}")) == ["krest"]
 
 
+@pytest.mark.parametrize(
+    "comando, frases",
+    [
+        ("kwkF", ["camina", "anda", "avanza", "ve adelante", "hacia delante", "walk", "caminar"]),
+        ("kwkL", ["izquierda", "a la izquierda", "turn left"]),
+        ("kwkR", ["derecha", "a la derecha", "turn right"]),
+        ("d", ["túmbate", "tumbate", "échate", "acuéstate", "al suelo", "lie down", "descansa"]),
+        ("khi", ["saluda", "hola", "saludar", "di hola", "hello"]),
+        ("kbalance", ["equilíbrate", "equilibrate", "mantén el equilibrio", "balance"]),
+        ("ktrF", ["trota", "trotar", "run"]),
+    ],
+)
+def test_resto_de_ordenes_basicas(interprete, comando, frases):
+    for frase in frases:
+        assert comandos(interprete.interpretar(f"Perro, {frase}")) == [comando], frase
+
+
+@pytest.mark.parametrize("frase", ["media vuelta", "date media vuelta", "medio giro"])
+def test_media_vuelta(interprete, frase):
+    assert comandos(interprete.interpretar(f"Perro, {frase}")) == ["kwkL"]
+
+
+@pytest.mark.parametrize("frase", ["da una vuelta", "date una vuelta", "vuelta completa", "gira sobre ti"])
+def test_vuelta_entera(interprete, frase):
+    assert comandos(interprete.interpretar(f"Perro, {frase}")) == ["kwkL", "kwkL"]
+
+
+def test_ninguna_palabra_en_dos_ordenes():
+    """El catálogo rechaza una palabra repetida; aquí se comprueba que carga con todo el vocabulario."""
+    assert len(cargar_catalogo().palabras_normalizadas()) > 100
+
+
+def test_ordenes_encadenadas_con_sinonimos(interprete):
+    assert comandos(interprete.interpretar("Perro, siéntate y luego saluda")) == ["ksit", "khi"]
+
+
 def test_sin_tildes_igual_que_con_tildes():
     assert normalizar("Siéntate") == normalizar("sientate") == "sientate"
 

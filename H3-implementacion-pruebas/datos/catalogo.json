@@ -27,8 +27,8 @@
       "id": "REQ-04",
       "nombre": "camina",
       "nivel": 1,
-      "palabras": ["camina", "adelante"],
-      "fuente_palabras": "spec.md REQ-04; sinónimo de opciones-ordenes-de-voz.md T1-03",
+      "palabras": ["camina", "adelante", "anda", "avanza", "ve adelante", "ve hacia delante", "hacia adelante", "hacia delante", "delante", "marcha", "walk", "forward", "camino", "caminar", "andar", "avanzar"],
+      "fuente_palabras": "spec.md REQ-04; sinónimo de opciones-ordenes-de-voz.md T1-03; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkF", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, R-04)"}
       ],
@@ -38,8 +38,8 @@
       "id": "REQ-05",
       "nombre": "izquierda",
       "nivel": 1,
-      "palabras": ["izquierda"],
-      "fuente_palabras": "spec.md REQ-05",
+      "palabras": ["izquierda", "a la izquierda", "gira izquierda", "hacia la izquierda", "gira a izquierda", "left", "turn left", "izquierdas"],
+      "fuente_palabras": "spec.md REQ-05; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, OPEN-04)"}
       ],
@@ -49,8 +49,8 @@
       "id": "REQ-06",
       "nombre": "derecha",
       "nivel": 1,
-      "palabras": ["derecha"],
-      "fuente_palabras": "spec.md REQ-06",
+      "palabras": ["derecha", "a la derecha", "gira derecha", "hacia la derecha", "gira a derecha", "right", "turn right", "derechas"],
+      "fuente_palabras": "spec.md REQ-06; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkR", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, OPEN-04)"}
       ],
@@ -71,8 +71,8 @@
       "id": "REQ-08",
       "nombre": "túmbate",
       "nivel": 1,
-      "palabras": ["túmbate", "descansa"],
-      "fuente_palabras": "spec.md REQ-08; sinónimo de opciones-ordenes-de-voz.md T1-07",
+      "palabras": ["túmbate", "descansa", "échate", "acuéstate", "al suelo", "tumbarse", "túmbese", "túmbete", "lie down", "down", "rest"],
+      "fuente_palabras": "spec.md REQ-08; sinónimo de opciones-ordenes-de-voz.md T1-07; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "d", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -82,8 +82,8 @@
       "id": "REQ-09",
       "nombre": "saluda",
       "nivel": 1,
-      "palabras": ["saluda"],
-      "fuente_palabras": "spec.md REQ-09",
+      "palabras": ["saluda", "hola", "saludo", "saludar", "di hola", "saluda al público", "hello", "hi", "salúdame"],
+      "fuente_palabras": "spec.md REQ-09; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "khi", "duracion_s": null, "provisional": true, "fuente": "sin dato; comando por confirmar en el robot (OPEN-03)"}
       ],
@@ -93,8 +93,8 @@
       "id": "REQ-10",
       "nombre": "equilíbrate",
       "nivel": 1,
-      "palabras": ["equilíbrate"],
-      "fuente_palabras": "spec.md REQ-10",
+      "palabras": ["equilíbrate", "equilibrio", "equilibra", "equilibrarse", "mantén el equilibrio", "balance", "balancéate"],
+      "fuente_palabras": "spec.md REQ-10; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kbalance", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -104,8 +104,8 @@
       "id": "REQ-11",
       "nombre": "trota",
       "nivel": 1,
-      "palabras": ["trota"],
-      "fuente_palabras": "spec.md REQ-11",
+      "palabras": ["trota", "trotar", "trote", "a trote", "trot", "run", "trotando"],
+      "fuente_palabras": "spec.md REQ-11; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "ktrF", "duracion_s": null, "provisional": true, "fuente": "marcha continua; comando por confirmar en el robot (OPEN-03)"}
       ],
@@ -115,8 +115,8 @@
       "id": "REQ-14",
       "nombre": "baila",
       "nivel": 2,
-      "palabras": ["baila"],
-      "fuente_palabras": "spec.md REQ-14",
+      "palabras": ["baila", "bailar", "baile", "a bailar", "ponte a bailar", "dance", "vaila", "baila un poco"],
+      "fuente_palabras": "spec.md REQ-14; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [],
       "notas": "Secuencia sin definir (OPEN-08, P-09). Sin pasos, el intérprete la trata como orden no disponible (REQ-13).",
       "interrumpe": false
@@ -125,8 +125,8 @@
       "id": "REQ-15",
       "nombre": "media vuelta",
       "nivel": 2,
-      "palabras": ["media vuelta"],
-      "fuente_palabras": "spec.md REQ-15",
+      "palabras": ["media vuelta", "da media vuelta", "date media vuelta", "dame media vuelta", "gira media vuelta", "medio giro", "half turn"],
+      "fuente_palabras": "spec.md REQ-15; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"}
       ],
@@ -137,8 +137,8 @@
       "id": "REQ-16",
       "nombre": "da una vuelta",
       "nivel": 2,
-      "palabras": ["da una vuelta"],
-      "fuente_palabras": "spec.md REQ-16",
+      "palabras": ["da una vuelta", "date una vuelta", "dame una vuelta", "vuelta completa", "gira sobre ti", "da un giro", "spin"],
+      "fuente_palabras": "spec.md REQ-16; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"},
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"}
