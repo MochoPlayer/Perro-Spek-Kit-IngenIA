@@ -1,0 +1,150 @@
+{
+  "_descripcion": "Catálogo de órdenes de VOICE-BITTLE (D-05). Nivel 1: REQ-02 a REQ-11 (spec.md). Nivel 2 opcional: REQ-14 a REQ-16. Comandos: comandos-bittle-estandar-seguros.md. Sinónimos: opciones-ordenes-de-voz.md (Tier 1 y T2-13), citados en H1 §2.4; pendientes de aprobar por el equipo (T010). Duraciones: por medir en la sesión 2 (I-4, T069); null = sin dato.",
+  "ordenes": [
+    {
+      "id": "REQ-02",
+      "nombre": "siéntate",
+      "nivel": 1,
+      "palabras": ["siéntate", "sentado", "a sentarse"],
+      "fuente_palabras": "spec.md REQ-02; sinónimos de opciones-ordenes-de-voz.md T2-13",
+      "pasos": [
+        {"comando": "ksit", "duracion_s": 2.0, "provisional": true, "fuente": "H1 §2.4: «ej. 2 s para ksit»"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-03",
+      "nombre": "levántate",
+      "nivel": 1,
+      "palabras": ["levántate", "arriba"],
+      "fuente_palabras": "spec.md REQ-03; sinónimo de opciones-ordenes-de-voz.md T1-02 y H1 §2.4",
+      "pasos": [
+        {"comando": "kup", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-04",
+      "nombre": "camina",
+      "nivel": 1,
+      "palabras": ["camina", "adelante"],
+      "fuente_palabras": "spec.md REQ-04; sinónimo de opciones-ordenes-de-voz.md T1-03",
+      "pasos": [
+        {"comando": "kwkF", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, R-04)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-05",
+      "nombre": "izquierda",
+      "nivel": 1,
+      "palabras": ["izquierda"],
+      "fuente_palabras": "spec.md REQ-05",
+      "pasos": [
+        {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, OPEN-04)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-06",
+      "nombre": "derecha",
+      "nivel": 1,
+      "palabras": ["derecha"],
+      "fuente_palabras": "spec.md REQ-06",
+      "pasos": [
+        {"comando": "kwkR", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, OPEN-04)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-07",
+      "nombre": "para",
+      "nivel": 1,
+      "palabras": ["para", "stop"],
+      "fuente_palabras": "spec.md REQ-07; sinónimo de opciones-ordenes-de-voz.md T1-06",
+      "pasos": [
+        {"comando": "krest", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
+      ],
+      "interrumpe": true
+    },
+    {
+      "id": "REQ-08",
+      "nombre": "túmbate",
+      "nivel": 1,
+      "palabras": ["túmbate", "descansa"],
+      "fuente_palabras": "spec.md REQ-08; sinónimo de opciones-ordenes-de-voz.md T1-07",
+      "pasos": [
+        {"comando": "d", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-09",
+      "nombre": "saluda",
+      "nivel": 1,
+      "palabras": ["saluda"],
+      "fuente_palabras": "spec.md REQ-09",
+      "pasos": [
+        {"comando": "khi", "duracion_s": null, "provisional": true, "fuente": "sin dato; comando por confirmar en el robot (OPEN-03)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-10",
+      "nombre": "equilíbrate",
+      "nivel": 1,
+      "palabras": ["equilíbrate"],
+      "fuente_palabras": "spec.md REQ-10",
+      "pasos": [
+        {"comando": "kbalance", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-11",
+      "nombre": "trota",
+      "nivel": 1,
+      "palabras": ["trota"],
+      "fuente_palabras": "spec.md REQ-11",
+      "pasos": [
+        {"comando": "ktrF", "duracion_s": null, "provisional": true, "fuente": "marcha continua; comando por confirmar en el robot (OPEN-03)"}
+      ],
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-14",
+      "nombre": "baila",
+      "nivel": 2,
+      "palabras": ["baila"],
+      "fuente_palabras": "spec.md REQ-14",
+      "pasos": [],
+      "notas": "Secuencia sin definir (OPEN-08, P-09). Sin pasos, el intérprete la trata como orden no disponible (REQ-13).",
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-15",
+      "nombre": "media vuelta",
+      "nivel": 2,
+      "palabras": ["media vuelta"],
+      "fuente_palabras": "spec.md REQ-15",
+      "pasos": [
+        {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"}
+      ],
+      "notas": "Falta el comando que corta el giro al acabar la duración (X-07, P-09).",
+      "interrumpe": false
+    },
+    {
+      "id": "REQ-16",
+      "nombre": "da una vuelta",
+      "nivel": 2,
+      "palabras": ["da una vuelta"],
+      "fuente_palabras": "spec.md REQ-16",
+      "pasos": [
+        {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"},
+        {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"}
+      ],
+      "notas": "Dos giros a la izquierda seguidos (H1 REQ-16, aclaración 26/10). Falta el comando que corta el giro (X-07, P-09).",
+      "interrumpe": false
+    }
+  ]
+}

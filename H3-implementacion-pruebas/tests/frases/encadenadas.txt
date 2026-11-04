@@ -1,0 +1,9 @@
+# REQ-29 (SC-009): frases encadenadas. Formato: frase => ids esperados en orden (separados por coma).
+# Palabras de enlace iniciales: «y», «luego» (spec.md, casos límite; P-03). Borrador de la IA (T011).
+Atenio, camina y siéntate => REQ-04, REQ-02
+Atenio, levántate y camina => REQ-03, REQ-04
+Atenio, saluda luego siéntate => REQ-09, REQ-02
+Atenio, izquierda y luego derecha => REQ-05, REQ-06
+Atenio, levántate y camina y siéntate => REQ-03, REQ-04, REQ-02
+Atenio, levántate, luego saluda y luego túmbate => REQ-03, REQ-09, REQ-08
+Atenio, camina y bailoteo y siéntate => REQ-04, REQ-02

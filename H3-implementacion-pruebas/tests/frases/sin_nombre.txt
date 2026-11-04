@@ -1,0 +1,22 @@
+# REQ-01 (SC-005): 20 frases sin «Atenio» al principio. Ninguna produce orden (IGNORADA).
+# Borrador de la IA: lo revisa el equipo (tasks.md T011).
+siéntate
+levántate
+camina
+izquierda
+derecha
+para
+túmbate
+saluda
+equilíbrate
+trota
+perro, siéntate
+camina y siéntate
+oye, para ya
+venga, arriba
+el robot que camine
+Bittle, saluda
+siéntate, Atenio
+ahora túmbate
+¿se llama Atenio el perro?
+trota un poco
