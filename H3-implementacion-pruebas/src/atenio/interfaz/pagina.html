@@ -28,7 +28,14 @@
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.4;
          background: var(--fondo); color: var(--texto); }
-  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  main { max-width: 900px; margin: 0 auto; padding: 16px; }
+  .rejilla { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .rejilla .tarjeta + .tarjeta { margin-top: 0; }
+  @media (max-width: 640px) { .rejilla { grid-template-columns: 1fr; } }
+  .panel ul { max-height: 140px; }
+  #aviso { background: var(--aviso-fondo); color: var(--aviso); border-radius: 8px; padding: 8px 12px; margin: 12px 0 0; font-size: 14px; }
+  #micro.hablando { background: var(--riesgo); border-color: var(--riesgo); color: var(--riesgo-texto); }
+  #micro { touch-action: none; user-select: none; -webkit-user-select: none; }
   button { font: inherit; cursor: pointer; }
   :focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
   .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
@@ -53,9 +60,6 @@
   #micro.encendido { background: var(--acento); color: var(--acento-texto); }
   #micro.esperando { border-style: dashed; cursor: progress; }
   #nota-micro { text-align: center; color: var(--suave); font-size: 14px; margin: 8px 0 0; min-height: 20px; }
-  #hablar { display: block; margin: 12px auto 0; padding: 12px 20px; font: inherit; font-size: 16px; border-radius: 12px;
-    border: 2px solid var(--acento); background: transparent; color: inherit; cursor: pointer; touch-action: none; user-select: none; }
-  #hablar.grabando { background: var(--acento); color: var(--acento-texto); }
   #nota-micro.mal { color: var(--mal); }
   #onda { display: block; width: 100%; height: 96px; margin-top: 16px; border-radius: 8px; background: var(--fondo); }
 
@@ -91,76 +95,94 @@
   </header>
   <p id="aviso-parada" role="alert" hidden>■ PARADA ACTIVA · el robot no acepta órdenes. Pulsa «Quitar parada».</p>
 
-  <section class="tarjeta" aria-label="Micrófono">
-    <button id="micro" type="button" aria-pressed="false"><span class="icono" aria-hidden="true">🔇</span><span class="palabra">Micro apagado</span></button>
-    <p id="nota-micro" role="status">Pulsa para escuchar.</p>
-    <button id="hablar" type="button" hidden>Mantén pulsado para hablar (o la barra espaciadora)</button>
-    <canvas id="onda" aria-label="Onda de voz del micrófono"></canvas>
-    <p class="rotulo">Lo último que oí</p>
-    <div id="ultima"><span class="vacio">Di «Perro» y una orden, por ejemplo «Perro, siéntate».</span></div>
-  </section>
+  <div class="rejilla">
+    <section class="tarjeta" aria-label="Micrófono">
+      <button id="micro" type="button" aria-pressed="false"><span class="icono" aria-hidden="true">🔇</span><span class="palabra">Micro apagado</span></button>
+      <p id="nota-micro" role="status">Preparando el micro…</p>
+      <canvas id="onda" aria-label="Onda de voz del micrófono"></canvas>
+      <p id="aviso" role="status" hidden></p>
+      <form id="form-frase">
+        <input id="frase" type="text" autocomplete="off" placeholder="Escribir sin micro: Perro, siéntate" aria-label="Escribir una frase sin micro">
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
 
-  <section class="tarjeta" aria-labelledby="t-lista">
-    <p class="rotulo" id="t-lista">Órdenes</p>
-    <ul id="lista"><li class="vacio">Aún no hay órdenes. Pulsa el micro y di «Perro, siéntate».</li></ul>
-    <form id="form-frase">
-      <input id="frase" type="text" autocomplete="off" placeholder="Escribir sin micro: Perro, siéntate" aria-label="Escribir una frase sin micro">
-      <button type="submit">Enviar</button>
-    </form>
-  </section>
+    <section class="tarjeta panel" aria-label="Órdenes">
+      <p class="rotulo">Reconocidas</p>
+      <ul id="reconocidas"></ul>
+      <p class="rotulo">En cola</p>
+      <ul id="en-cola"></ul>
+      <p class="rotulo">Ejecutadas</p>
+      <ul id="ejecutadas"></ul>
+    </section>
+  </div>
 </main>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
-const MAX_FILAS = 50;
+const MAX_FILAS = 20;
 let desde = 0, desdeNivel = 0, microEncendido = false, esperandoMicro = false, umbral = null;
-const filas = [];  // lo más nuevo primero: {hora, palabra, comandos} o {hora, aviso}
+let hablando = false, modoPulsar = true, avisoHasta = 0;
+const reconocidas = [];  // lo más nuevo primero: {palabra}
 
-// ---------------------------------------------------------------- botón del micro (S1-S5)
+const post = (ruta, cuerpo) => fetch(ruta, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo || {}) });
+
+// ---------------------------------------------------------------- botón del micro: mantener pulsado para hablar
 function pintarMicro(encendido, esperando, nota, mal) {
   microEncendido = encendido; esperandoMicro = esperando;
+  if (!encendido) hablando = false;
   const b = $("micro");
-  b.classList.toggle("encendido", encendido && !esperando);
+  b.classList.toggle("encendido", encendido && !esperando && !hablando);
+  b.classList.toggle("hablando", hablando);
   b.classList.toggle("esperando", esperando);
-  b.setAttribute("aria-pressed", String(encendido));
+  b.setAttribute("aria-pressed", String(hablando));
   b.setAttribute("aria-busy", String(esperando));
-  b.querySelector(".icono").textContent = esperando ? "⏳" : encendido ? "🎤" : "🔇";
-  b.querySelector(".palabra").textContent = esperando ? (encendido ? "Encendiendo…" : "Apagando…") : encendido ? "Escuchando" : "Micro apagado";
+  b.querySelector(".icono").textContent = esperando ? "⏳" : hablando ? "🎙️" : encendido ? "🎤" : "🔇";
+  b.querySelector(".palabra").textContent = esperando ? "Preparando…" : hablando ? "Hablando…" : encendido ? "Mantén pulsado" : "Micro apagado";
   const n = $("nota-micro");
-  n.textContent = nota ?? (esperando ? "Cargando el motor de voz…" : encendido ? "Pulsa para apagar." : "Pulsa para escuchar.");
+  n.textContent = nota ?? (esperando ? "Cargando el motor de voz…" : hablando ? "Suelta al terminar la orden."
+    : encendido ? "Mantén pulsado el botón (o la barra espaciadora), habla y suelta." : "Pulsa para encender el micro.");
   n.classList.toggle("mal", !!mal);
 }
 
-$("micro").addEventListener("click", async () => {
-  if (esperandoMicro) return;
-  const encender = !microEncendido;
-  pintarMicro(encender, true);
+async function encenderMicro() {
+  if (esperandoMicro || microEncendido) return;
+  pintarMicro(true, true);
   try {
-    const r = await fetch("/micro", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ encender }) });
-    const d = await r.json();
-    pintarMicro(!!d.micro, false, encender && !d.micro ? "No se pudo encender: mira el aviso de la lista." : null, encender && !d.micro);
+    const d = await (await post("/micro", { encender: true })).json();
+    pintarMicro(!!d.micro, false, d.micro ? null : "No se pudo encender el micro. Pulsa para probar otra vez.", !d.micro);
   } catch (e) {
-    pintarMicro(!encender, false, "El programa no responde.", true);
+    pintarMicro(false, false, "El programa no responde.", true);
   }
-});
-
-// ---------------------------------------------------------------- mantener pulsado para hablar (modo «pulsar»)
-let modoPulsar = false, grabando = false;
-function hablar(activo) {
-  if (activo === grabando || (activo && !(microEncendido && !esperandoMicro && modoPulsar))) return;
-  grabando = activo;
-  $("hablar").classList.toggle("grabando", activo);
-  fetch("/hablar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ activo }) }).catch(() => {});
 }
-const bh = $("hablar");
-bh.addEventListener("pointerdown", (ev) => { bh.setPointerCapture(ev.pointerId); hablar(true); });
-bh.addEventListener("pointerup", () => hablar(false));
-bh.addEventListener("pointercancel", () => hablar(false));
-document.addEventListener("keydown", (ev) => {
-  if (ev.code === "Space" && !ev.repeat && document.activeElement.tagName !== "INPUT" && !bh.hidden) { ev.preventDefault(); hablar(true); }
+
+function empezarAHablar() {
+  if (!microEncendido || esperandoMicro || hablando) return;
+  hablando = true; pintarMicro(true, false);
+  post("/hablar", { activo: true }).catch(() => {});
+}
+function dejarDeHablar() {
+  if (!hablando) return;
+  hablando = false; pintarMicro(microEncendido, false);
+  post("/hablar", { activo: false }).catch(() => {});
+}
+
+$("micro").addEventListener("pointerdown", (ev) => {
+  ev.preventDefault();
+  if (!microEncendido) { encenderMicro(); return; }
+  $("micro").setPointerCapture(ev.pointerId);
+  empezarAHablar();
 });
-document.addEventListener("keyup", (ev) => { if (ev.code === "Space") hablar(false); });
-window.addEventListener("blur", () => hablar(false));
+$("micro").addEventListener("pointerup", dejarDeHablar);
+$("micro").addEventListener("pointercancel", dejarDeHablar);
+window.addEventListener("blur", dejarDeHablar);
+const fueraDeTexto = (ev) => !(ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement);
+document.addEventListener("keydown", (ev) => {
+  if (ev.code === "Space" && !ev.repeat && fueraDeTexto(ev)) { ev.preventDefault(); empezarAHablar(); }
+});
+document.addEventListener("keyup", (ev) => {
+  if (ev.code === "Space" && fueraDeTexto(ev)) { ev.preventDefault(); dejarDeHablar(); }
+});
 
 // ---------------------------------------------------------------- parada (REQ-30)
 function pintarParada(activa) {
@@ -176,49 +198,52 @@ $("parada").addEventListener("click", async () => {
 });
 
 // ---------------------------------------------------------------- lista de órdenes y avisos
-function pintarLista() {
-  const ul = $("lista");
+// Solo se enseñan órdenes reconocidas: lo no reconocido nunca llega a la pantalla (el servidor marca esos avisos como «oculto»).
+function pintarLista(id, filas, vacio, conComandos) {
+  const ul = $(id);
   ul.replaceChildren();
   if (!filas.length) {
-    const li = document.createElement("li"); li.className = "vacio";
-    li.textContent = "Aún no hay órdenes. Pulsa el micro y di «Perro, siéntate».";
-    ul.append(li); return;
+    const li = document.createElement("li"); li.className = "vacio"; li.textContent = vacio; ul.append(li); return;
   }
   for (const f of filas) {
     const li = document.createElement("li");
-    const h = document.createElement("span"); h.className = "hora"; h.textContent = f.hora; li.append(h);
-    if (f.aviso !== undefined) {
-      li.className = "aviso";
-      const t = document.createElement("span"); t.textContent = "⚠ " + f.aviso; li.append(t);
-    } else {
-      const p = document.createElement("span"); p.className = "dicha"; p.textContent = f.palabra; li.append(p);
-      for (const c of f.comandos) { const k = document.createElement("code"); k.textContent = c; li.append(k); }
-    }
+    if (f.hora) { const h = document.createElement("span"); h.className = "hora"; h.textContent = f.hora; li.append(h); }
+    const p = document.createElement("span"); p.className = "dicha"; p.textContent = f.palabra; li.append(p);
+    if (conComandos) for (const c of f.comandos || []) { const k = document.createElement("code"); k.textContent = c; li.append(k); }
     ul.append(li);
   }
 }
 
+function pintarAviso(texto) {
+  const a = $("aviso");
+  a.textContent = "⚠ " + texto; a.hidden = false; avisoHasta = Date.now() + 8000;
+  setTimeout(() => { if (Date.now() >= avisoHasta) a.hidden = true; }, 8100);
+}
+
+let firmaPaneles = "";
 function pintar(foto) {
   if (foto.desde !== desde) return;  // respuesta vieja: la siguiente trae todo
-  let cambio = false;
   for (const e of foto.eventos) {
-    if (e.oculto) continue;  // avisos de órdenes no reconocidas: no se enseñan
-    if (e.tipo === "texto_reconocido") $("ultima").textContent = e.texto;
-    else if (e.tipo === "orden_interpretada") {
-      const o = e.orden || { palabra: e.texto, comandos: [] };
-      filas.unshift({ hora: e.hora, palabra: o.palabra, comandos: o.comandos }); cambio = true;
-    } else if (e.tipo === "aviso") { filas.unshift({ hora: e.hora, aviso: e.texto }); cambio = true; }
+    if (e.tipo === "orden_interpretada") {
+      reconocidas.unshift({ hora: e.hora, palabra: e.orden ? e.orden.palabra : e.texto });
+    } else if (e.tipo === "aviso" && !e.oculto) pintarAviso(e.texto);
   }
   desde = foto.total_eventos;
-  filas.length = Math.min(filas.length, MAX_FILAS);
-  if (cambio || !$("lista").children.length) pintarLista();
+  reconocidas.length = Math.min(reconocidas.length, MAX_FILAS);
+  const firma = JSON.stringify([reconocidas, foto.cola_ordenes, foto.ejecutadas]);
+  if (firma !== firmaPaneles) {
+    firmaPaneles = firma;
+    pintarLista("reconocidas", reconocidas, "Nada todavía.", false);
+    pintarLista("en-cola", foto.cola_ordenes.map((p) => ({ palabra: p })), "Vacía.", false);
+    pintarLista("ejecutadas", foto.ejecutadas, "Nada todavía.", true);
+  }
 
   const linea = $("estado-linea");
   linea.textContent = (foto.conectado ? "● Robot conectado" : "✕ Robot no conectado") + " · " + foto.enlace
     + (foto.cola ? " · " + foto.cola + " en cola" : "");
   linea.classList.toggle("mal", !foto.conectado);
   pintarParada(foto.parada);
-  if (!esperandoMicro && foto.voz_activa !== microEncendido) {
+  if (!esperandoMicro && foto.voz_activa !== microEncendido && !(foto.voz_activa === false && !microEncendido)) {
     pintarMicro(foto.voz_activa, false, foto.error_voz ? "El micro se ha parado: " + foto.error_voz : null, !!foto.error_voz);
   }
 }
@@ -256,11 +281,13 @@ function dibujarOnda() {
   const encendido = microEncendido && !esperandoMicro;
   for (let i = 0; i < N; i++) {
     const v = encendido ? historia[i] : 0, alto = Math.max(1, escala(v));
-    c.fillStyle = !encendido ? color("--onda-apagada") : umbral !== null && v >= umbral ? color("--acento") : color("--suave");
+    c.fillStyle = !encendido ? color("--onda-apagada")
+      : modoPulsar ? (hablando ? color("--riesgo") : color("--suave"))
+      : umbral !== null && v >= umbral ? color("--acento") : color("--suave");
     c.fillRect(i * paso + 1, medio - alto, Math.max(1, paso - 2), alto * 2);
   }
   c.font = "12px system-ui";
-  if (!encendido) return;
+  if (!encendido || modoPulsar) return;
   if (umbral === null) { c.fillStyle = color("--suave"); c.fillText("calibrando el ruido de la sala… (no hables)", 4, 16); return; }
   const u = escala(umbral);
   c.strokeStyle = color("--aviso"); c.setLineDash([6, 4]); c.lineWidth = 1;
@@ -275,15 +302,12 @@ async function sondearNivel() {
       const d = await r.json();
       if (d.activo) {
         if (d.total < desdeNivel) desdeNivel = 0;  // la escucha se ha vuelto a crear
-        umbral = d.umbral;
-        modoPulsar = d.modo === "pulsar";
+        umbral = d.umbral; modoPulsar = d.modo === "pulsar";
         for (const v of d.valores) { historia.shift(); historia.push(v); }
         desdeNivel = d.total;
       }
     } catch (e) { /* el sondeo de /estado ya avisa */ }
   } else { historia.fill(0); }
-  bh.hidden = !(microEncendido && !esperandoMicro && modoPulsar);
-  if (bh.hidden && grabando) hablar(false);
   dibujarOnda();
   setTimeout(sondearNivel, 50);
 }
@@ -291,6 +315,7 @@ async function sondearNivel() {
 pintarMicro(false, false);
 sondear();
 sondearNivel();
+encenderMicro();  // el motor de voz se carga al abrir la página; después solo se mantiene pulsado
 </script>
 </body>
 </html>

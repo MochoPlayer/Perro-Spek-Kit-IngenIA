@@ -30,7 +30,7 @@ MOTORES = ("vosk", "whisper-tiny", "whisper-base", "falso")
 MODOS = ("pulsar", "continuo")  # pulsar: se habla mientras se mantiene pulsado el micro (por defecto)
 COLA_PULSAR_BLOQUES = 4  # 0,2 s de audio tras soltar, para no cortar la última sílaba
 MAX_PULSAR_BLOQUES = 600  # 30 s: tope por si se queda pulsado
-MIN_PULSAR_BYTES = 2 * 16_000 // 4  # 0,25 s: menos es un toque, no una frase
+MIN_PULSAR_BYTES = 2 * 16_000 * 2 // 5  # 0,4 s en total (con la cola de 0,2 s): menos es un toque, no una frase
 
 # Valores del prototipo I-1 (prototipos/motor-voz/README.md). Provisionales: P-01.
 VOZ_POR_DEFECTO = {

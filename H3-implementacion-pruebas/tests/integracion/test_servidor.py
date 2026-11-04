@@ -155,7 +155,7 @@ def web_micro(catalogo):
 def test_la_pagina_simple_tiene_sus_elementos(web):
     base, _, _ = web
     html = pedir(base + "/")[2].decode("utf-8")
-    for id_ in ('id="micro"', 'id="onda"', 'id="ultima"', 'id="lista"', 'id="parada"', 'id="aviso-parada"',
+    for id_ in ('id="micro"', 'id="onda"', 'id="reconocidas"', 'id="en-cola"', 'id="ejecutadas"', 'id="parada"', 'id="aviso-parada"',
                 'id="frase"', 'id="estado-linea"'):
         assert id_ in html
     assert "<canvas" in html and "/nivel" in html and "/micro" in html
