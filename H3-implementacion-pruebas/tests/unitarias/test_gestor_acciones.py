@@ -86,8 +86,10 @@ def test_tres_ordenes_en_una_frase(gestor, robot, reloj):
     assert robot.registro == [(0.0, "kup"), (1.0, "kwkF"), (4.0, "ksit")]
 
 
-def test_tres_ordenes_con_robot_ocupado_se_envian_en_orden_de_llegada(gestor, robot, reloj):
-    """REQ-32, SC-010."""
+def test_tres_ordenes_con_robot_ocupado_se_envian_en_orden_de_llegada(robot, reloj):
+    """REQ-32, SC-010, en modo cola (nueva_orden_interrumpe = false)."""
+    ajustes = dataclasses.replace(cargar_ajustes(), nueva_orden_interrumpe=False)
+    gestor = GestorAcciones(robot, reloj, ajustes=ajustes, inactividad_s=T)
     gestor.recibir(ordenes(CAMINA))
     avanzar(gestor, reloj, 0.5)
     gestor.recibir(ordenes(SIENTATE))

@@ -133,6 +133,8 @@ class GestorAcciones:
             return
 
         self._ultima_orden = self._reloj.ahora()
+        if self._ajustes.nueva_orden_interrumpe and any(not o.interrumpe for o in interpretacion.ordenes):
+            self._interrumpir()
         for orden in interpretacion.ordenes:
             self.eventos.publicar(TipoEvento.ORDEN_INTERPRETADA, orden.id)
             if orden.interrumpe:  # REQ-07, D-10: «para» no se encola
@@ -190,6 +192,17 @@ class GestorAcciones:
             return True
         # P-03: un paso sin duración no termina solo; el reposo por inactividad lo corta.
         return self.estado is Estado.OCUPADO and self._fin_paso is None
+
+    def _interrumpir(self) -> None:
+        """Orden nueva con `nueva_orden_interrumpe`: se descarta lo que esperaba y se corta la acción en curso.
+
+        No se envía nada para cortar: el siguiente comando sustituye al anterior en el Bittle (prueba del 04/11,
+        un comando nuevo cambia la acción aunque el robot esté andando).
+        """
+        self._vaciar_cola()
+        self._fin_paso = None
+        if self.estado is Estado.OCUPADO:
+            self.estado = Estado.LIBRE
 
     def _reposo_por_inactividad(self) -> None:
         self._vaciar_cola()

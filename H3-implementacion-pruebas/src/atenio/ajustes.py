@@ -24,6 +24,11 @@ class Ajustes:
     provisionales: tuple[str, ...]  # claves marcadas «provisional»
     voz: dict = field(default_factory=dict)  # sección «voz» (escucha.py); vacía si falta
     palabra_activacion: str = PALABRA_POR_DEFECTO  # REQ-01, REQ-35
+    # True: cada orden nueva corta la acción en curso y se ejecuta ya (decisión del equipo, 04/11; cambia REQ-32).
+    # False: cola en orden de llegada (REQ-32 tal como está en spec.md).
+    nueva_orden_interrumpe: bool = False
+    espera_arranque_robot_s: float = 0.0  # al abrir el puerto el Bittle se reinicia; se espera su «Ready!»
+    tope_abrir_puerto_s: float | None = None  # sin robot encendido, abrir el COM de Bluetooth no vuelve nunca
 
 
 def cargar_ajustes(ruta: str | Path | None = None) -> Ajustes:
@@ -46,4 +51,7 @@ def cargar_ajustes(ruta: str | Path | None = None) -> Ajustes:
         provisionales=tuple(k for k, e in datos.items() if e.get("provisional")),
         voz=dict(v("voz")) if "voz" in datos else {},
         palabra_activacion=str(v("palabra_activacion")) if "palabra_activacion" in datos else PALABRA_POR_DEFECTO,
+        nueva_orden_interrumpe=bool(v("nueva_orden_interrumpe")) if "nueva_orden_interrumpe" in datos else False,
+        espera_arranque_robot_s=float(v("espera_arranque_robot_s")) if "espera_arranque_robot_s" in datos else 0.0,
+        tope_abrir_puerto_s=float(v("tope_abrir_puerto_s")) if datos.get("tope_abrir_puerto_s", {}).get("valor") is not None else None,
     )
