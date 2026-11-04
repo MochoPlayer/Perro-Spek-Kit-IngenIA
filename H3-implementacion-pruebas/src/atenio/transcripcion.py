@@ -46,13 +46,30 @@ class TranscriptorVosk:
         self._modelo = vosk.Model(str(ruta_modelo))
         self._gramatica = json.dumps(gramatica, ensure_ascii=False) if gramatica else None
 
-    def transcribir(self, audio: bytes) -> str:
+    def _reconocedor(self):
         if self._gramatica:
-            rec = self._vosk.KaldiRecognizer(self._modelo, FRECUENCIA_HZ, self._gramatica)
-        else:
-            rec = self._vosk.KaldiRecognizer(self._modelo, FRECUENCIA_HZ)
-        rec.AcceptWaveform(audio)
-        return json.loads(rec.FinalResult()).get("text", "").strip()
+            return self._vosk.KaldiRecognizer(self._modelo, FRECUENCIA_HZ, self._gramatica)
+        return self._vosk.KaldiRecognizer(self._modelo, FRECUENCIA_HZ)
+
+    def transcribir(self, audio: bytes) -> str:
+        flujo = self.flujo()
+        flujo.aceptar(audio)
+        return flujo.terminar()
+
+    def flujo(self) -> "FlujoVosk":
+        """Reconocimiento en flujo: se le pasan los bloques mientras la persona habla."""
+        return FlujoVosk(self._reconocedor())
+
+
+class FlujoVosk:
+    def __init__(self, reconocedor):
+        self._rec = reconocedor
+
+    def aceptar(self, bloque: bytes) -> None:
+        self._rec.AcceptWaveform(bloque)
+
+    def terminar(self) -> str:
+        return json.loads(self._rec.FinalResult()).get("text", "").strip()
 
 
 class TranscriptorWhisper:
