@@ -51,6 +51,8 @@ class EnlaceSerie:
         try:
             datos = self._ser.read(self._ser.in_waiting or 0)
         except (serial.SerialException, OSError):
+            # Cable quitado o Bluetooth caído: se marca desconectado para que el gestor lo publique (T060).
+            self.desconectar()
             return []
         texto = self._resto + datos.decode("ascii", errors="replace")
         *lineas, self._resto = texto.replace("\r\n", "\n").replace("\r", "\n").split("\n")
