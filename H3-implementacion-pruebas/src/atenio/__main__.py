@@ -13,7 +13,7 @@ from atenio.ajustes import cargar_ajustes
 from atenio.interfaz import HOST, crear_servidor
 from atenio.principal import crear_sistema
 
-PUERTO_POR_DEFECTO = 8765  # valor de diseño; cualquier puerto libre sirve (--puerto)
+PUERTO_POR_DEFECTO = 8642  # valor de diseño; si está ocupado, --puerto con otro
 
 
 def leer_opciones(argv: list[str] | None = None) -> argparse.Namespace:
@@ -47,7 +47,12 @@ def main(argv: list[str] | None = None) -> int:
     op = leer_opciones(argv)
     escucha = crear_escucha_si_hay() if op.voz else None
     sistema = crear_sistema(op.enlace, escucha=escucha)
-    servidor = crear_servidor(sistema, op.puerto)
+    try:
+        servidor = crear_servidor(sistema, op.puerto)
+    except OSError as e:
+        print(f"Error: el puerto {op.puerto} está ocupado o no se puede usar ({e}). Prueba con --puerto 8700.",
+              file=sys.stderr)
+        return 1
     url = f"http://{HOST}:{servidor.server_address[1]}/"
     sistema.arrancar()
     conectado = "conectado" if sistema.enlace.conectado else "NO conectado"

@@ -67,6 +67,7 @@ def test_una_frase_escrita_llega_al_registro_del_simulado(web):
     foto = json.loads(pedir(base + "/estado")[2])
     tipos = [e["tipo"] for e in foto["eventos"]]
     assert tipos == ["estado_conexion", "texto_reconocido", "orden_interpretada"]
+    assert foto["eventos"][2]["texto"].endswith("(REQ-02)")  # palabra del catálogo y su REQ
     assert foto["registro"][-1]["comando"] == "ksit"
     assert foto["conectado"] is True and foto["estado"] == "Ocupado"
 
@@ -111,3 +112,11 @@ def test_ruta_desconocida_da_404(web):
     with pytest.raises(urllib.error.HTTPError) as e:
         pedir(base + "/nada")
     assert e.value.code == 404
+
+
+def test_puerto_ocupado_falla_al_arrancar(web):
+    """En Windows dos servidores podían compartir puerto sin error; ahora el segundo falla (OSError)."""
+    base, sistema, _ = web
+    puerto = int(base.rsplit(":", 1)[1])
+    with pytest.raises(OSError):
+        crear_servidor(sistema, puerto)

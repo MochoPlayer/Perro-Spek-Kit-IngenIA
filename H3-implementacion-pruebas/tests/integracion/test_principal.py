@@ -60,13 +60,13 @@ def test_texto_vacio_no_publica_nada(catalogo):
 
 
 def test_el_registro_de_la_interfaz_anota_lo_enviado(catalogo):
-    reloj = RelojSimulado(10)
+    reloj = RelojSimulado(10)  # el registro cuenta desde el arranque
     robot = EnlaceSimulado(reloj)
     sistema = Sistema(robot, reloj, catalogo=catalogo)
     sistema.arrancar(con_bucle=False)
     sistema.oir("Atenio, siéntate")
     foto = sistema.foto()
-    assert foto["registro"] == [{"t": 10.0, "comando": "ksit"}]
+    assert foto["registro"] == [{"t": 0.0, "comando": "ksit"}]
     assert foto["conectado"] is True
     assert foto["estado"] == Estado.OCUPADO.value
 

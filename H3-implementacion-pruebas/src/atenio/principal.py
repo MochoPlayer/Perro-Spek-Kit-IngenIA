@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from pathlib import Path
 from typing import Callable
 
@@ -86,10 +87,13 @@ class Sistema:
         duracion_desconocida_s: float | None = None,
     ) -> None:
         self.reloj = reloj
+        self._inicio = reloj.ahora()  # el registro de la interfaz cuenta desde el arranque
         self.ajustes = ajustes if ajustes is not None else cargar_ajustes()
         self.catalogo = catalogo if catalogo is not None else cargar_catalogo()
         self.enlace = EnlaceConRegistro(enlace, reloj)
         self.eventos = Eventos()
+        self._horas: list[str] = []  # hora de pared de cada evento, para la pantalla
+        self.eventos.suscribir(lambda _e: self._horas.append(time.strftime("%H:%M:%S")))
         self.interprete = Interprete(
             self.catalogo,
             reloj=reloj,
@@ -174,9 +178,19 @@ class Sistema:
                 "cola": len(self.gestor.cola),
                 "desde": desde,
                 "total_eventos": desde + len(eventos),
-                "eventos": [{"tipo": e.tipo.value, "texto": e.texto} for e in eventos],
-                "registro": [{"t": round(t, 2), "comando": c} for t, c in self.enlace.registro[-50:]],
+                "eventos": [{"tipo": e.tipo.value, "texto": self._para_pantalla(e), "hora": h}
+                            for e, h in zip(eventos, self._horas[desde:])],
+                "registro": [{"t": round(t - self._inicio, 2), "comando": c} for t, c in self.enlace.registro[-50:]],
             }
+
+    def _para_pantalla(self, e: Evento) -> str:
+        """La orden interpretada se publica con su REQ («REQ-04»); en pantalla va también su palabra."""
+        if e.tipo is TipoEvento.ORDEN_INTERPRETADA:
+            try:
+                return f"{self.catalogo.por_id(e.texto).palabras[0]} ({e.texto})"
+            except (KeyError, IndexError, ValueError):
+                return e.texto
+        return e.texto
 
     def suscribir(self, funcion: Callable[[Evento], None]) -> None:
         self.eventos.suscribir(funcion)

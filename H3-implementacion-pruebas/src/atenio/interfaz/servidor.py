@@ -6,6 +6,7 @@ GET / (página), GET /estado?desde=N (JSON), POST /frase {"texto": ...}, POST /p
 from __future__ import annotations
 
 import json
+import socket
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -71,9 +72,20 @@ def crear_servidor(sistema, puerto: int = 0) -> ThreadingHTTPServer:
             else:
                 self._json({"error": "no existe"}, 404)
 
-    servidor = ThreadingHTTPServer((HOST, puerto), Manejador)
-    servidor.daemon_threads = True
-    return servidor
+    return _ServidorExclusivo((HOST, puerto), Manejador)
+
+
+class _ServidorExclusivo(ThreadingHTTPServer):
+    """En Windows, `allow_reuse_address` deja que dos programas compartan el puerto sin error.
+    Aquí el puerto es exclusivo: si está ocupado, falla al arrancar (OSError) en lugar de no recibir nada."""
+
+    allow_reuse_address = False
+    daemon_threads = True
+
+    def server_bind(self) -> None:
+        if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):  # solo existe en Windows
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
 
 
 def servir_en_hilo(servidor: ThreadingHTTPServer) -> threading.Thread:
