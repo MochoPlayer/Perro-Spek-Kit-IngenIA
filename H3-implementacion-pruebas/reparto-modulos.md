@@ -110,7 +110,7 @@ flowchart LR
 
 **Responsable**: ____ (sesiones con el robot: quien tenga el Bittle)
 
-**Primero, la sesión 2 con el robot** (no depende del código; cierra P-02, P-03, P-05 y P-09). Toda sesión empieza con T068. Hoja para anotar: [`H4-demostracion-aceptacion/ensayos-fisicos.md`](../H4-demostracion-aceptacion/ensayos-fisicos.md). Herramienta para enviar y cronometrar comandos: `python herramientas/sesion_robot.py --puerto COMx`.
+**Primero, la sesión 2 con el robot** (no depende del código; cierra P-02, P-03, P-05 y P-09). Toda sesión empieza con T068. Hoja para anotar: [`H4-demostracion-aceptacion/ensayos-fisicos.md`](../H4-demostracion-aceptacion/ensayos-fisicos.md). Herramientas para mandar órdenes con un clic y cronometrar: [`verificacion-robot/`](verificacion-robot/README.md) (panel web y consola; no forman parte del programa).
 
 | ☐ | Tarea | Qué hay que hacer | Depende de |
 |---|---|---|---|

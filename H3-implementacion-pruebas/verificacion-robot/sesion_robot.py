@@ -1,9 +1,9 @@
-"""Consola para la sesión 2 con el Bittle real (T068 a T071 y T080). No forma parte del programa final.
+﻿"""Consola para la sesión 2 con el Bittle real (T068 a T071 y T080). No forma parte del programa final.
 
 Uso, desde H3-implementacion-pruebas/:
-    python herramientas/sesion_robot.py --listar
-    python herramientas/sesion_robot.py --puerto COM5
-    python herramientas/sesion_robot.py --puerto COM5 --baudios 115200 --fin "\\n"
+    python verificacion-robot/sesion_robot.py --listar
+    python verificacion-robot/sesion_robot.py --puerto COM5
+    python verificacion-robot/sesion_robot.py --puerto COM5 --baudios 115200 --fin "\\n"
 
 Dentro de la consola:
     ksit       envía el comando y empieza a cronometrar
@@ -27,7 +27,7 @@ sys.path.insert(0, str(RAIZ_H3 / "src"))
 
 from atenio.ajustes import cargar_ajustes  # noqa: E402
 from atenio.catalogo import cargar_catalogo  # noqa: E402
-from atenio.enlace.medicion import ErrorMedicion, SesionMedida, interpretar_fin_de_linea  # noqa: E402
+from medicion import ErrorMedicion, SesionMedida, interpretar_fin_de_linea  # noqa: E402
 from atenio.enlace.serie import EnlaceSerie  # noqa: E402
 from atenio.reloj import RelojReal  # noqa: E402
 

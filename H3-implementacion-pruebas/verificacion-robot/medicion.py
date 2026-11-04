@@ -1,8 +1,8 @@
-"""Medición de comandos con el robot real para la sesión 2 (T069, T070, T071, T080).
+﻿"""Medición de comandos con el robot real para la sesión 2 (T069, T070, T071, T080).
 
 Envía un comando por el enlace, cronometra hasta que la persona que observa marca el fin y guarda
 lo que devuelve el robot. La lógica no depende del teclado ni del puerto: las pruebas la usan con
-`EnlaceSimulado` y `RelojSimulado` (REQ-26). La consola está en `herramientas/sesion_robot.py`.
+`EnlaceSimulado` y `RelojSimulado` (REQ-26). La consola está en `verificacion-robot/sesion_robot.py`.
 """
 from __future__ import annotations
 

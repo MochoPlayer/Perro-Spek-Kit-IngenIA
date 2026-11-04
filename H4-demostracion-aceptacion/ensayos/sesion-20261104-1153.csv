@@ -1,0 +1,14 @@
+comando,duracion_s,respuestas,nota
+ksit,23.63,G | k,
+kup,0.86,k,cortado con la parada
+kwkf,,G | ?wkf | k,interrumpido por el siguiente comando
+kup,5.29,k,
+kwkf,12.55,?wkf | k,
+ksit,1.17,G | k,
+khi,7.21,k,cortado con la parada
+kbalance,2.51,G | k,
+kwkL,2.61,k,cortado con la parada
+kwkR,5.16,G | k,cortado con la parada
+kwkF,4.46,G | k,
+kup,,G | k,interrumpido por el siguiente comando
+ktrF,2.29,k,cortado con la parada

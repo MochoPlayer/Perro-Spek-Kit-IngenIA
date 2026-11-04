@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel Bittle</title>
+<style>
+  @font-face { font-family: Poppins; src: url(/fuentes/Poppins-Regular.ttf); font-weight: 400; }
+  @font-face { font-family: Poppins; src: url(/fuentes/Poppins-Medium.ttf); font-weight: 500; }
+  @font-face { font-family: Poppins; src: url(/fuentes/Poppins-SemiBold.ttf); font-weight: 600; }
+  :root {
+    --navy: #13294B; --navy2: #2A4470; --teal: #12A39A; --deep: #0B6F69; --mint: #E1F3F1;
+    --slate: #5C6B7A; --mist: #F7F9FB; --fog: #D5DCE3; --red: #D64545; --soft: #AFB8C4;
+    --amber: #FDF3D0; --amber-borde: #D9A400;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Poppins, system-ui, sans-serif; background: var(--mist); color: var(--navy); }
+  header { background: var(--navy); color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  header img { width: 36px; height: 36px; background: #fff; border-radius: 8px; padding: 4px; }
+  header h1 { font-size: 20px; font-weight: 600; margin: 0; }
+  header .sub { font-size: 13px; color: var(--soft); }
+  .pill { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--navy2); padding: 6px 12px; border-radius: 999px; font-size: 14px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--soft); }
+  .on .dot { background: #3ddc97; box-shadow: 0 0 0 3px rgba(61,220,151,.25); }
+  .off .dot { background: var(--red); }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  section { background: #fff; border: 1px solid var(--fog); border-radius: 14px; padding: 16px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .ayuda { font-size: 13px; color: var(--slate); margin: 0 0 12px; }
+  .parada { width: 100%; border: 0; border-radius: 14px; background: var(--red); color: #fff; font: 600 22px Poppins, sans-serif;
+            padding: 18px; cursor: pointer; letter-spacing: .5px; box-shadow: 0 4px 0 #a83434; margin-bottom: 20px; }
+  .parada:active { transform: translateY(3px); box-shadow: 0 1px 0 #a83434; }
+  .parada small { display: block; font-size: 12px; font-weight: 400; opacity: .85; }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .orden { border: 2px solid var(--teal); background: var(--mint); color: var(--navy); border-radius: 12px; padding: 14px 10px; cursor: pointer;
+           font: 600 16px Poppins, sans-serif; text-align: left; transition: transform .05s, background .15s; }
+  .orden:hover { background: #cdebe7; }
+  .orden:active { transform: scale(.97); }
+  .orden code { display: block; font: 400 12px ui-monospace, Consolas, monospace; color: var(--deep); margin-top: 4px; }
+  .orden.movimiento { border-color: var(--amber-borde); background: var(--amber); }
+  .orden.movimiento:hover { background: #f8e8b0; }
+  .orden.activa { outline: 3px solid var(--navy); outline-offset: 2px; }
+  .orden:disabled { opacity: .45; cursor: not-allowed; }
+  .etiqueta { display: inline-block; font-size: 11px; font-weight: 500; background: var(--amber-borde); color: #fff; border-radius: 6px; padding: 1px 6px; margin-top: 6px; }
+  .bloque { margin-top: 18px; }
+  .curso { display: flex; align-items: center; gap: 12px; background: var(--navy); color: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; min-height: 58px; }
+  .curso .reloj { font: 600 26px ui-monospace, Consolas, monospace; min-width: 90px; }
+  .curso .que { flex: 1; font-size: 14px; }
+  .curso button { border: 0; border-radius: 10px; background: var(--teal); color: #fff; font: 600 14px Poppins, sans-serif; padding: 10px 14px; cursor: pointer; }
+  .curso.libre { background: var(--fog); color: var(--slate); }
+  .curso.libre button { display: none; }
+  .fila { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .fila input { flex: 1; min-width: 120px; border: 1px solid var(--fog); border-radius: 10px; padding: 10px; font: 14px ui-monospace, Consolas, monospace; }
+  .boton { border: 1px solid var(--navy); background: #fff; color: var(--navy); border-radius: 10px; padding: 9px 14px; font: 500 14px Poppins, sans-serif; cursor: pointer; }
+  .boton.lleno { background: var(--navy); color: #fff; }
+  #registro { height: 420px; overflow-y: auto; font: 12.5px ui-monospace, Consolas, monospace; background: var(--mist); border-radius: 10px; padding: 8px; border: 1px solid var(--fog); }
+  #registro div { padding: 3px 4px; border-bottom: 1px dashed var(--fog); }
+  #registro .hora { color: var(--soft); margin-right: 6px; }
+  .t-enviado { color: var(--navy); font-weight: 600; }
+  .t-robot { color: var(--deep); }
+  .t-medida { color: #fff; background: var(--teal); border-radius: 6px; }
+  .t-parada, .t-aviso { color: var(--red); font-weight: 600; }
+  .t-estado { color: var(--slate); font-style: italic; }
+  #medidas { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  #medidas th, #medidas td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--fog); }
+  #medidas th { color: var(--slate); font-weight: 500; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.ver { opacity: 1; }
+  kbd { background: var(--fog); border-radius: 4px; padding: 0 5px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <img src="/logo.svg" alt="">
+  <div>
+    <h1>Panel del Bittle</h1>
+    <div class="sub">Bloque C · herramienta de pruebas con el robot real</div>
+  </div>
+  <div id="pill" class="pill"><span class="dot"></span><span id="estado-texto">Comprobando…</span></div>
+</header>
+
+<main>
+  <div>
+    <button class="parada" id="parada">■ PARADA<small id="parada-sub">Envía el comando de parada · tecla <kbd>Espacio</kbd> o <kbd>Esc</kbd></small></button>
+
+    <div id="curso" class="curso libre">
+      <div class="reloj" id="reloj">—</div>
+      <div class="que" id="que">El robot está libre. Pulsa una orden.</div>
+      <button id="fin">Ha terminado</button>
+    </div>
+
+    <section>
+      <h2>Posturas y gestos</h2>
+      <p class="ayuda">Terminan solos. Pulsa «Ha terminado» cuando el robot deje de moverse: eso es la duración. La letra que devuelve el robot (<code>k</code>, <code>d</code>) es un «recibido», no el fin.</p>
+      <div class="rejilla" id="posturas"></div>
+
+      <div class="bloque">
+        <h2>Movimientos</h2>
+        <p class="ayuda">No paran solos: deja espacio delante del robot y córtalos con <b>PARADA</b>.</p>
+        <div class="rejilla" id="movimientos"></div>
+      </div>
+
+      <div class="bloque">
+        <h2>Otro comando</h2>
+        <p class="ayuda">Para probar comandos que no están en el catálogo. <code>G</code> y <code>g</code> están bloqueados (giroscopio).</p>
+        <form class="fila" id="libre">
+          <input id="libre-cmd" placeholder="p. ej. kstr" autocomplete="off" spellcheck="false">
+          <button class="boton lleno" type="submit">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div>
+    <section>
+      <h2>Lo que pasa</h2>
+      <p class="ayuda">Comandos enviados y lo que responde el robot.</p>
+      <div id="registro"></div>
+      <div class="fila">
+        <button class="boton" id="conectar">Conectar</button>
+        <button class="boton" id="desconectar">Desconectar</button>
+        <button class="boton lleno" id="guardar">Guardar medidas (CSV)</button>
+      </div>
+    </section>
+    <section style="margin-top:20px">
+      <h2>Medidas</h2>
+      <p class="ayuda">Para pasarlas a <code>ensayos-fisicos.md</code>.</p>
+      <table id="medidas"><thead><tr><th>Comando</th><th>Respuesta</th><th>Duración</th><th>En marcha</th><th>Cómo acabó</th></tr></thead><tbody></tbody></table>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let desde = 0;
+  let comandoActivo = null;
+
+  function aviso(texto) {
+    const t = $("toast"); t.textContent = texto; t.classList.add("ver");
+    clearTimeout(aviso._t); aviso._t = setTimeout(() => t.classList.remove("ver"), 2200);
+  }
+
+  async function post(ruta, cuerpo) {
+    const r = await fetch(ruta, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo || {}) });
+    let datos = {}; try { datos = await r.json(); } catch (e) {}
+    return { ok: r.ok, ...datos };
+  }
+
+  async function enviar(comando) {
+    const r = await post("/enviar", { comando });
+    if (!r.ok) aviso(r.texto || "No se pudo enviar");
+  }
+
+  function boton(b) {
+    const el = document.createElement("button");
+    el.className = "orden " + b.grupo;
+    el.dataset.comando = b.comando;
+    el.innerHTML = `${b.nombre}<code>${b.comando}</code>` + (b.grupo === "movimiento" ? `<span class="etiqueta">no para solo</span>` : "");
+    el.title = `${b.id} · envía ${b.comando}`;
+    el.onclick = () => enviar(b.comando);
+    return el;
+  }
+
+  async function cargarBotones() {
+    const d = await (await fetch("/botones")).json();
+    d.botones.filter(b => b.grupo === "postura").forEach(b => $("posturas").appendChild(boton(b)));
+    d.botones.filter(b => b.grupo === "movimiento").forEach(b => $("movimientos").appendChild(boton(b)));
+    $("parada-sub").innerHTML = `Envía <code>${d.parada}</code> · tecla <kbd>Espacio</kbd> o <kbd>Esc</kbd>`;
+  }
+
+  function pintarEvento(e) {
+    const div = document.createElement("div");
+    div.className = "t-" + e.tipo;
+    const prefijo = { enviado: "→ ", robot: "← ", medida: "⏱ ", parada: "■ ", aviso: "⚠ ", estado: "· " }[e.tipo] || "";
+    div.innerHTML = `<span class="hora">${e.hora}</span>`;
+    div.appendChild(document.createTextNode(prefijo + e.texto));
+    const reg = $("registro");
+    const abajo = reg.scrollTop + reg.clientHeight >= reg.scrollHeight - 20;
+    reg.appendChild(div);
+    if (abajo) reg.scrollTop = reg.scrollHeight;
+    if (e.tipo === "medida") {
+      const tr = document.createElement("tr");
+      const s = (v) => v == null ? "—" : v.toFixed(2) + " s";
+      [e.comando, s(e.respuesta_s), s(e.duracion_s), s(e.en_marcha_s), e.nota].forEach(v => {
+        const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+      });
+      $("medidas").tBodies[0].prepend(tr);
+    }
+  }
+
+  async function refrescar() {
+    try {
+      const d = await (await fetch("/estado?desde=" + desde)).json();
+      d.eventos.forEach(pintarEvento);
+      desde += d.eventos.length;
+      const pill = $("pill");
+      pill.className = "pill " + (d.conectado ? "on" : "off");
+      $("estado-texto").textContent = d.conectado ? `Conectado · ${d.descripcion}` : `Sin conexión · ${d.descripcion}`;
+      document.querySelectorAll(".orden").forEach(b => b.disabled = !d.conectado);
+      const c = $("curso");
+      if (d.en_curso) {
+        c.classList.remove("libre");
+        $("reloj").textContent = d.en_curso.segundos.toFixed(1) + " s";
+        const resp = d.en_curso.respuesta_s == null ? "esperando respuesta del robot…" : `el robot respondió a los ${d.en_curso.respuesta_s.toFixed(2)} s`;
+        $("que").innerHTML = `Ejecutando <b>${d.en_curso.comando}</b> · ${resp}`;
+      } else {
+        c.classList.add("libre");
+        $("reloj").textContent = "—";
+        $("que").textContent = d.conectado ? "El robot está libre. Pulsa una orden." : "Sin conexión con el robot.";
+      }
+      const activo = d.en_curso ? d.en_curso.comando : null;
+      if (activo !== comandoActivo) {
+        document.querySelectorAll(".orden").forEach(b => b.classList.toggle("activa", b.dataset.comando === activo));
+        comandoActivo = activo;
+      }
+    } catch (e) {
+      $("pill").className = "pill off";
+      $("estado-texto").textContent = "El programa del panel no responde";
+    }
+  }
+
+  $("parada").onclick = () => post("/parada");
+  $("fin").onclick = () => post("/fin");
+  $("conectar").onclick = () => post("/conectar");
+  $("desconectar").onclick = () => post("/desconectar");
+  $("guardar").onclick = async () => { const r = await post("/guardar"); if (r.ruta) aviso("Guardado en " + r.ruta); };
+  $("libre").onsubmit = (ev) => { ev.preventDefault(); const c = $("libre-cmd").value.trim(); if (c) { enviar(c); $("libre-cmd").value = ""; } };
+  document.addEventListener("keydown", (ev) => {
+    if (ev.target.tagName === "INPUT") { if (ev.key === "Escape") post("/parada"); return; }
+    if (ev.key === " " || ev.key === "Escape") { ev.preventDefault(); post("/parada"); }
+  });
+
+  cargarBotones().then(refrescar);
+  setInterval(refrescar, 250);
+</script>
+</body>
+</html>

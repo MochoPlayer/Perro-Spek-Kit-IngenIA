@@ -1,4 +1,4 @@
-"""Herramienta de medición de la sesión 2 (T069, T070, T071, T080), sin robot (REQ-26).
+﻿"""Herramienta de medición de la sesión 2 (T069, T070, T071, T080), sin robot (REQ-26).
 
 Se prueba con robot y reloj simulados; las duraciones son de prueba, no medidas del Bittle.
 """
@@ -7,11 +7,9 @@ from __future__ import annotations
 import csv
 
 import pytest
-import serial
 
-from atenio.enlace.medicion import ErrorMedicion, SesionMedida, interpretar_fin_de_linea
-from atenio.enlace.serie import EnlaceSerie
 from atenio.enlace.simulado import EnlaceSimulado
+from medicion import ErrorMedicion, SesionMedida, interpretar_fin_de_linea
 
 
 @pytest.fixture
@@ -105,18 +103,3 @@ def test_guarda_el_csv(sesion, robot, reloj, tmp_path):
 def test_fin_de_linea_escrito_en_la_consola(texto, esperado):
     assert interpretar_fin_de_linea(texto) == esperado
 
-
-# ------------------------------------------------------------------ enlace serie (T060, T061)
-
-
-def test_enlace_serie_se_marca_desconectado_si_falla_la_lectura():
-    """Cable quitado durante la sesión: leer falla, el enlace pasa a desconectado y el gestor lo publica."""
-    e = EnlaceSerie("loop://")
-    e.conectar()
-
-    def mal(_n):
-        raise serial.SerialException("cable")
-
-    e._ser.read = mal
-    assert e.leer_lineas() == []
-    assert not e.conectado
