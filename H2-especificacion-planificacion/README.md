@@ -102,7 +102,7 @@ flowchart TB
 - [ ] Arquitectura y esquema del sistema (lo hace el equipo, no Spec Kit) → `arquitectura.md`
 - [ ] Plan técnico (`/speckit.plan`) y su revisión → `plan.md`
 - [ ] Tareas y primer incremento (`/speckit.tasks`) → `tasks.md`
-- [ ] Analyze (`/speckit.analyze`): contradicciones, huecos, riesgos y decisiones pendientes → `coherencia.md`
+- [x] Analyze (`/speckit.analyze`): contradicciones, huecos, riesgos y decisiones pendientes → `coherencia.md`
 - [ ] **Control:** ¿hay coherencia H1 → spec → plan → tasks? Si no, se vuelve a la revisión de la spec.
 - [ ] Etiquetar la versión H2 en Git y entregar el enlace al repo
 
