@@ -1,8 +1,10 @@
 # Plan de implementación: control por voz del Petoi Bittle (VOICE-BITTLE)
 
-**Hito**: H2 · **Estado**: borrador para revisar con el equipo · **Fecha**: 26/10/2026 · **Spec**: [`spec.md`](spec.md)
+**Hito**: H2 · **Estado**: borrador para revisar con el equipo · **Fecha**: 26/10/2026, actualizado el 04/11/2026 con `/speckit-plan` · **Spec**: [`spec.md`](spec.md) · **Constitución**: [`constitution.md`](constitution.md) v1.0.0
 
-**Entrada**: `spec.md` (verificada contra H1), `H1-especificacion-inicial/Entregable-H1.md`, `H1-especificacion-inicial/capacidades-bittle.md`, `H1-especificacion-inicial/opciones-ordenes-de-voz.md` y `referencias/notas/`.
+**Entrada**: `spec.md` (verificada contra H1), `constitution.md`, `H1-especificacion-inicial/Entregable-H1.md`, `H1-especificacion-inicial/capacidades-bittle.md`, `H1-especificacion-inicial/opciones-ordenes-de-voz.md`, `referencias/notas/` y el código de `H3-implementacion-pruebas/` (263 pruebas sin robot).
+
+> **Cambios del 04/11/2026.** Comprobación contra la constitución (antes, contra `CLAUDE.md`); estructura del proyecto con lo que ya existe en `H3-implementacion-pruebas/`; tabla «REQ → componente → decisión» con una fila por cada uno de los 35 REQ de H1, el módulo de código y el estado. No cambia ningún requisito ni ninguna decisión: las propuestas siguen pendientes del equipo, y las discrepancias de [`discrepancias.md`](discrepancias.md) y los pendientes P-01 a P-10 siguen abiertos. No se crean `research.md` ni `data-model.md`: su contenido ya está en este plan («Investigación previa» y «Modelo de datos») y un fichero aparte lo duplicaría.
 
 > **Cómo leer este documento.** Sigue la plantilla oficial de `plan.md` de Spec Kit (resumen, contexto técnico, comprobación de la constitución, estructura del proyecto, investigación, diseño y seguimiento de la complejidad), adaptada al reto. Los identificadores `ESC-`, `NEC-`, `REQ-`, `CTX-` y `OPEN-` son los de H1 y `spec.md`.
 >
@@ -39,15 +41,20 @@ El enfoque técnico se basa en tres ideas:
 
 ## Comprobación de la constitución
 
-El repositorio todavía no tiene `constitution.md` (el flujo del `README.md` de H2 la pone antes de `spec.md`). Mientras no exista, este plan comprueba las reglas fijas de `CLAUDE.md`:
+Comprobación contra [`constitution.md`](constitution.md) v1.0.0 (antes de diseñar y otra vez después; el resultado es el mismo).
 
-| Regla | ¿Se cumple? | Cómo |
+| Principio | ¿Se cumple? | Cómo |
 |---|---|---|
-| Requisitos y arquitectura los define el equipo, no la IA | Sí | Toda decisión no fijada va como propuesta pendiente de confirmar. |
-| No inventar contenido | Sí | Cada dato cita su fuente. Los valores que faltan son pendientes. |
-| Todo requisito se puede derivar a pruebas | Sí | Tabla «REQ → decisión del plan» con el nivel de prueba de cada uno. |
-| Pruebas de H3 sin el robot físico | Sí | Robot simulado y reloj simulado (D-03, D-08). |
-| No subir audios personales | Sí | Las pruebas automáticas usan texto, no grabaciones (D-09). |
+| I. Pruebas sin el robot físico | Sí | Robot simulado y reloj simulado (D-03, D-08). Las 263 pruebas de `H3-implementacion-pruebas/` pasan sin robot, micrófono ni puerto serie: el enlace serie se prueba con el puerto falso `loop://` de `pyserial`. Falta el guardián de T012 que haga fallar una prueba que abra un puerto real. |
+| II. No inventar contenido | Sí | Cada dato cita su fuente. Los valores sin medir son `null` o `provisional` en `ajustes.json` y `catalogo.json`, cada uno con su campo `fuente`. |
+| III. No guardar audio ni datos personales | Sí, en lo construido | Las pruebas entran por texto (D-09). La captura de audio (componente 1) aún no existe; REQ-24 se comprueba cuando exista (P-01). |
+| IV. La IA no decide por el equipo | Sí | Toda decisión no fijada va como «propuesta, pendiente de confirmar por el equipo». Las 13 discrepancias abiertas y P-01 a P-10 quedan abiertos, con sus opciones. |
+| V. Todo requisito se deriva a pruebas | Sí | Tabla «REQ → componente → decisión»: los 35 REQ tienen nivel de prueba. El detalle prueba a prueba está en `H3-implementacion-pruebas/plan-pruebas.md`. |
+| VI. Las respuestas del cliente mandan | Sí | Las decisiones «Fijada» citan la respuesta del cliente (p. ej. órdenes encadenadas, interfaz web o aplicación). |
+| VII. Identificadores estables | Sí | Se usan los ID de H1 sin cambios. |
+| VIII. Todo en español | Sí | Documentos, avisos y nombres del código en español. |
+
+**Puertas**: ninguna regla se incumple. Hay asuntos sin decidir (`[NEEDS CLARIFICATION]` de `spec.md`, discrepancias y P-NN). Por decisión de Mario (04/11) no se resuelven en este paso: quedan como «pendiente del equipo».
 
 ## Esquema del sistema
 
@@ -157,45 +164,54 @@ stateDiagram-v2
 
 ```text
 H2-especificacion-planificacion/
-├── README.md        # objetivo y checklist del hito
-├── spec.md          # qué hace el sistema (verificada contra H1)
-├── plan.md          # este documento: cómo se construye
-└── tasks.md         # siguiente paso: /speckit.tasks
+├── README.md          # objetivo y checklist del hito
+├── constitution.md    # reglas fijas (copia de .specify/memory/constitution.md)
+├── spec.md            # qué hace el sistema (verificada contra H1)
+├── plan.md            # este documento: cómo se construye
+├── tasks.md           # tareas (/speckit-tasks)
+├── discrepancias.md   # contradicciones pendientes del equipo
+└── coherencia.md      # informe de /speckit-analyze
 ```
 
-`constitution.md`, `arquitectura.md` y `coherencia.md` aparecen en el flujo del README pero aún no existen. El esquema del sistema está en este plan; el equipo decide si lo pasa a `arquitectura.md`.
+`arquitectura.md` aparece en el flujo del README pero no existe. El esquema del sistema está en este plan; el equipo decide si lo pasa a `arquitectura.md`. Spec Kit usa esta carpeta como carpeta de la funcionalidad (`.specify/feature.json`), no `specs/001-…/`.
 
-### Código fuente (propuesta, pendiente de confirmar por el equipo)
+### Código fuente (propuesta, pendiente de confirmar por el equipo, P-10)
 
-`H3-implementacion-pruebas/README.md` dice que la ubicación de `src/` y `tests/` se fija en `plan.md`. Propuesta:
+`H3-implementacion-pruebas/README.md` dice que la ubicación de `src/` y `tests/` se fija en `plan.md`. Propuesta, con lo que ya existe el 04/11/2026 (✓) y lo que falta (—):
 
 ```text
 H3-implementacion-pruebas/
+├── pyproject.toml              ✓ configuración de pytest (marcas «discrepancia» y «pendiente»)
+├── requirements.txt            ✓ pyserial, pytest (sin motor de voz: espera a P-01)
 ├── src/atenio/
-│   ├── principal.py            # arranca y conecta los componentes
-│   ├── ajustes.py              # lee ajustes.json (valores provisionales)
-│   ├── reloj.py                # reloj real y reloj simulado (D-08)
-│   ├── audio.py                # 1 · captura de audio, solo en memoria
-│   ├── transcripcion.py        # 2 · adaptador del motor de voz (D-02)
-│   ├── interprete.py           # 3 · activación, normalización, encadenadas
-│   ├── catalogo.py             # carga y consulta del catálogo (D-05)
-│   ├── gestor_acciones.py      # 4 · cola, fin de acción, para, parada, reposo
-│   ├── eventos.py              # eventos hacia la interfaz
+│   ├── principal.py            — arranca y conecta los componentes (T019, T045, T057)
+│   ├── ajustes.py              ✓ lee ajustes.json (valores provisionales)
+│   ├── reloj.py                ✓ reloj real y reloj simulado (D-08)
+│   ├── modelos.py              ✓ Orden, Paso, Interpretación (modelo de datos de este plan)
+│   ├── audio.py                — 1 · captura de audio, solo en memoria (P-01)
+│   ├── transcripcion.py        — 2 · adaptador del motor de voz (D-02, P-01)
+│   ├── interprete.py           ✓ 3 · activación, normalización, encadenadas, espera de 5 s
+│   ├── catalogo.py             ✓ carga y consulta del catálogo (D-05)
+│   ├── gestor_acciones.py      ✓ 4 · cola, fin de acción, para, parada, reposo, conexión, batería
+│   ├── eventos.py              ✓ eventos hacia la interfaz
 │   ├── enlace/
-│   │   ├── base.py             # interfaz común del enlace (D-03)
-│   │   ├── serie.py            # 5 · puerto serie real (pyserial)
-│   │   └── simulado.py         # robot simulado con registro
-│   └── interfaz/               # 6 · interfaz web o de escritorio (D-07)
+│   │   ├── base.py             ✓ interfaz común del enlace (D-03), batería baja, giroscopio
+│   │   ├── serie.py            ✓ 5 · puerto serie real (pyserial); sin probar con el robot (P-02)
+│   │   └── simulado.py         ✓ robot simulado con registro
+│   └── interfaz/               — 6 · interfaz web o de escritorio (D-07, P-06)
 ├── datos/
-│   ├── catalogo.json           # órdenes, comandos, duraciones estimadas
-│   └── ajustes.json            # 5 s, T, reposo, puerto, baudios, máximo por frase
+│   ├── catalogo.json           ✓ 13 órdenes; duraciones sin medir = null (P-03)
+│   └── ajustes.json            ✓ 5 s, T, reposo, parada, puerto, baudios, máximo por frase
+├── prototipos/motor-voz.md     — resultados de I-1 e I-2 (ruta propuesta por tasks.md T047; discrepancia Y-05)
+├── plan-pruebas.md             ✓ REQ y SC → pruebas → nivel → estado
 └── tests/
-    ├── unitarias/              # intérprete, catálogo, gestor con reloj simulado
-    ├── integracion/            # cadena texto → intérprete → gestor → robot simulado
-    └── frases/                 # frases de prueba en texto (sin audio)
+    ├── conftest.py             ✓ catálogo, reloj simulado, lectura de frases
+    ├── unitarias/              ✓ intérprete, catálogo, ajustes, reloj, enlaces, gestor
+    ├── integracion/            ✓ cadena texto → intérprete → gestor → robot simulado
+    └── frases/                 ✓ frases de prueba en texto (sin audio)
 ```
 
-**Decisión de estructura**: un solo proyecto. La separación por componentes sigue el esquema. Las pruebas de integración usan el robot simulado; las sesiones con el robot físico se registran en H4.
+**Decisión de estructura**: un solo proyecto. La separación por componentes sigue el esquema. Las pruebas de integración usan el robot simulado; las sesiones con el robot físico se registran en H4. Hoy la cadena de integración la monta la clase `Cadena` de `tests/integracion/test_cadena.py`; `principal.py` hará lo mismo con los componentes reales.
 
 ## Investigación previa (fase 0)
 
@@ -256,39 +272,49 @@ Lo que hay que averiguar antes de cerrar el plan. Cada punto tiene ya una propue
 
 **Medida de la latencia (REQ-21).** El tiempo «desde que el usuario termina la frase» incluye la transcripción. En las pruebas sin robot se mide la parte propia (texto → envío). La medida completa se hace en la integración con voz real (20 mediciones). Cómo se marca «fin de la frase» depende del motor elegido (I-1).
 
-## REQ → decisión del plan
+## REQ → componente → decisión
 
-| REQ | Componente | Decisión(es) | Prueba prevista (nivel) |
-|---|---|---|---|
-| REQ-01 | Intérprete | D-09 | Unitaria: 20 frases con nombre / 20 sin nombre |
-| REQ-02 a REQ-06 | Catálogo, gestor, enlace | D-05, D-06 | Integración con simulado; demo |
-| REQ-07 | Gestor | D-10 | Unitaria: «para» con acción en curso → `krest`, no se encola |
-| REQ-08 | Catálogo, gestor | D-05 | Integración con simulado (`d`); demo |
-| REQ-09, REQ-11 | Catálogo | D-05 (comando editable, OPEN-03) | Integración con simulado; confirmar en el robot |
-| REQ-10 | Catálogo | D-05 | Integración con simulado; demo |
-| REQ-12 | Intérprete, interfaz | D-14 | Unitaria: 20 entradas → ningún comando y aviso |
-| REQ-13 | Intérprete, interfaz | D-05, D-14 | Unitaria: 10 órdenes fuera del catálogo |
-| REQ-14 | Catálogo (secuencia) | D-05; secuencia pendiente (OPEN-08) | Integración: lista de comandos = secuencia |
-| REQ-15, REQ-16 | Catálogo, gestor | D-05, D-06; duración del giro pendiente (OPEN-04) | Integración: `kwkL` durante la duración calibrada; demo 5 intentos |
-| REQ-17 | Captura de audio | D-02 | Integración con voz real |
-| REQ-18 | Adaptador + intérprete | D-02, D-09 | Inspección + unitarias del intérprete |
-| REQ-19 | Interfaz, eventos | D-07 | Integración (eventos) + demo |
-| REQ-20 | Enlace | D-03, D-04 | Integración: el simulado registra la cadena exacta |
-| REQ-21 | Adaptador, gestor | D-02, D-08 | Software con simulado + voz real (20 medidas) |
-| REQ-22 | Adaptador, intérprete | D-02 | Voz real: 20 intentos por orden |
-| REQ-23 | Intérprete, gestor | D-09 | Unitaria: 20 inválidas + 1 válida |
-| REQ-24 | Captura, adaptador | D-02, D-09 | Inspección + comprobación de carpeta tras sesión |
-| REQ-25 | Gestor, enlace | D-13 | Unitaria con simulado desconectado; demo |
-| REQ-26 | Enlace simulado | D-03, D-08 | Todo el conjunto de pruebas sin robot |
-| REQ-27 | Todo | D-01, P-07 | Demo en el portátil del equipo |
-| REQ-28 | (procedimiento) | — | Inspección antes de cada sesión con robot |
-| REQ-29 | Intérprete, gestor | D-06, D-10 | Unitaria: 2 y 3 órdenes; una fuera del catálogo |
-| REQ-30 | Gestor, interfaz | D-07, D-11 | Unitaria con reloj simulado; demo |
-| REQ-31 | Gestor | D-08, D-11 | Unitaria con T reducido y reloj simulado |
-| REQ-32 | Gestor | D-06, D-10 | Unitaria: 3 órdenes con robot ocupado |
-| REQ-33 | Enlace, gestor, interfaz | D-03 | Integración: el simulado envía «Low power: 6.5V» |
-| REQ-34 | Enlace | D-12 | Solo con robot (OPEN-10) |
-| REQ-35 | Intérprete, reloj | D-08 | Unitaria: «Atenio» + orden < 5 s; «Atenio» solo |
+Una fila por cada uno de los 35 REQ de H1 (`Entregable-H1.md` §5; los mismos de `spec.md`). «Módulo» es el fichero de `H3-implementacion-pruebas/src/atenio/` que lo implementa (— si aún no existe). «Pendiente del equipo» lista lo que el equipo debe decidir antes de cerrar el REQ: los P-NN de este plan, las discrepancias de [`discrepancias.md`](discrepancias.md) y los OPEN-NN de H1. Estas filas no deciden nada. El detalle de cada prueba (fichero::función) y su estado está en [`H3-implementacion-pruebas/plan-pruebas.md`](../H3-implementacion-pruebas/plan-pruebas.md).
+
+| REQ | Componente | Módulo (H3) | Decisión(es) | Pendiente del equipo | Prueba prevista (nivel) |
+|---|---|---|---|---|---|
+| REQ-01 | Intérprete | `interprete.py` | D-09 | OPEN-01 (reconocimiento de «Atenio», P-01) | Unitaria: 20 frases con nombre / 20 sin nombre; voz real |
+| REQ-02 | Catálogo, intérprete, gestor, enlace | `catalogo.py`, `catalogo.json`, `gestor_acciones.py` | D-05, D-06 | P-03 (duración; la de `ksit` es provisional) | Integración con simulado (`ksit`); demo |
+| REQ-03 | Catálogo, intérprete, gestor, enlace | ídem | D-05, D-06 | P-03 | Integración con simulado (`kup`); demo |
+| REQ-04 | Catálogo, intérprete, gestor, enlace | ídem | D-05, D-06 | P-03 (tiempo de marcha, R-04) | Integración con simulado (`kwkF`); demo |
+| REQ-05 | Catálogo, intérprete, gestor, enlace | ídem | D-05, D-06 | P-03 (tiempo de marcha) | Integración con simulado (`kwkL`); demo |
+| REQ-06 | Catálogo, intérprete, gestor, enlace | ídem | D-05, D-06 | P-03 (tiempo de marcha) | Integración con simulado (`kwkR`); demo |
+| REQ-07 | Catálogo («interrumpe»), gestor | `gestor_acciones.py`, `interprete.py` | D-10 | P-04 / OPEN-12 («para» y la cola; «para» dentro de una frase) | Unitaria: «para» con acción en curso → `krest`, no se encola; demo |
+| REQ-08 | Catálogo, gestor | `catalogo.json` | D-05 | Y-03 (si `d` es también la parada) | Integración con simulado (`d`); demo |
+| REQ-09 | Catálogo | `catalogo.json` | D-05 (comando editable) | OPEN-03 (`khi` por confirmar en el robot) | Integración con simulado; confirmar en el robot |
+| REQ-10 | Catálogo | `catalogo.json` | D-05 | P-03 | Integración con simulado (`kbalance`); demo |
+| REQ-11 | Catálogo | `catalogo.json` | D-05 (comando editable) | OPEN-03 (`ktrF`), P-03 | Integración con simulado; confirmar en el robot |
+| REQ-12 | Intérprete, eventos | `interprete.py`, `eventos.py` | D-14 | Y-02 (ruido sin «Atenio»; «sin sentido» frente a «fuera del catálogo»), Y-04 («ningún comando de movimiento» o «ningún comando»), X-06 (reposo o seguir como estaba) | Unitaria e integración: 20 entradas → ningún comando y aviso |
+| REQ-13 | Intérprete, eventos | `interprete.py`, `eventos.py` | D-05, D-14 | Y-02 (criterio frente a REQ-12) | Unitaria e integración: 10 órdenes fuera del catálogo |
+| REQ-14 | Catálogo (secuencia) | `catalogo.json` (sin pasos) | D-05 | P-09 / OPEN-08 (secuencia de «baila») | Integración: lista de comandos = secuencia; demo |
+| REQ-15 | Catálogo, gestor | `catalogo.json` | D-05, D-06 | P-09 / OPEN-04 (duración del giro), X-07 (comando de corte) | Integración: `kwkL` durante la duración calibrada; demo 5 intentos |
+| REQ-16 | Catálogo, gestor | `catalogo.json` | D-05, D-06 | P-09 / OPEN-04, X-07 | Integración: dos giros seguidos; demo 5 intentos |
+| REQ-17 | Captura de audio | — (`audio.py`) | D-02 | P-01 | Voz real; demo |
+| REQ-18 | Adaptador + intérprete | `interprete.py`; — (`transcripcion.py`) | D-02, D-09 | P-01, X-04 (motor dentro o fuera del sistema) | Inspección + unitarias del intérprete |
+| REQ-19 | Interfaz, eventos | `eventos.py`; — (`interfaz/`) | D-07, D-14 | P-06 (web o escritorio) | Unitaria de eventos; demo con la interfaz |
+| REQ-20 | Enlace | `enlace/serie.py`, `enlace/simulado.py` | D-03, D-04 | P-02 (USB o Bluetooth, puerto), X-01 (alcance solo Bluetooth), X-02 (baudios) | Unitaria (puerto falso `loop://`) e integración: cadena exacta; demo |
+| REQ-21 | Adaptador, gestor | `gestor_acciones.py`; — (`transcripcion.py`) | D-02, D-08 | P-01; OPEN-02 (1,5 s provisional) | Software con simulado (20 medidas, T020) + voz real (20 medidas) |
+| REQ-22 | Adaptador, intérprete | — (`transcripcion.py`) | D-02 | P-01; OPEN-02 (80 % provisional) | Voz real: 20 intentos por orden |
+| REQ-23 | Intérprete, gestor | `interprete.py`, `gestor_acciones.py` | D-09 | — | Unitaria e integración: 20 inválidas + 1 válida |
+| REQ-24 | Captura, adaptador | — (`audio.py`, `transcripcion.py`) | D-02, D-09 | P-01; OPEN-06 | Unitaria con motor falso + inspección de la carpeta tras una sesión |
+| REQ-25 | Gestor, enlace | `gestor_acciones.py`, `enlace/` | D-13 | P-08 (pérdida de conexión durante una acción) | Unitaria e integración con simulado desconectado; demo |
+| REQ-26 | Enlace simulado, reloj | `enlace/simulado.py`, `reloj.py` | D-03, D-08 | — | Todo el conjunto de pruebas sin robot, dos veces (T027) |
+| REQ-27 | Todo | — (`principal.py`) | D-01 | P-07 («otro ordenador»), P-10 | Demo en el portátil del equipo |
+| REQ-28 | (procedimiento) | — | — | — | Inspección antes de cada sesión con robot (T068) |
+| REQ-29 | Intérprete, gestor | `interprete.py`, `gestor_acciones.py` | D-06, D-10 | P-03 (máximo por frase, palabras de enlace, fin de acción), P-04 | Unitaria e integración: 2 y 3 órdenes; una fuera del catálogo |
+| REQ-30 | Gestor, interfaz | `gestor_acciones.py`; — (`interfaz/`) | D-07, D-11 | P-05 / OPEN-11 (comando), Y-03 (`d` frente a «reposo»), P-06 (botón) | Unitaria con reloj simulado; demo |
+| REQ-31 | Gestor | `gestor_acciones.py`, `ajustes.json` | D-08, D-11 | P-05 / OPEN-11 (comando de reposo) | Unitaria con T reducido y reloj simulado; demo con T = 5 min |
+| REQ-32 | Gestor | `gestor_acciones.py` | D-06, D-10 | P-03 (fin de acción), P-04 | Unitaria e integración: 3 órdenes con robot ocupado |
+| REQ-33 | Enlace, gestor, eventos | `enlace/base.py`, `gestor_acciones.py` | D-03 | Y-06 (¿prueba también con el robot real?) | Unitaria e integración: el simulado envía «Low power: 6.5V» |
+| REQ-34 | Enlace | `enlace/base.py`, `enlace/serie.py` | D-12 | Y-01 (D-12 sin P-NN), OPEN-10 | Unitaria: el enlace no envía `G`/`g`; robot físico |
+| REQ-35 | Intérprete, reloj | `interprete.py`, `reloj.py` | D-08 | OPEN-02 (5 s provisional) | Unitaria: «Atenio» + orden < 5 s; «Atenio» solo |
+
+**Resumen**: los 35 REQ tienen componente, decisión y prueba prevista. 30 tienen módulo de código en H3. Sin módulo: REQ-17, REQ-22 y REQ-24 (esperan a P-01), REQ-27 (espera a P-07 y `principal.py`) y REQ-28 (es un procedimiento, no código). Con módulo solo en parte: REQ-18 y REQ-21 (falta la transcripción, P-01), REQ-19 y REQ-30 (falta la interfaz, P-06).
 
 ## Riesgos técnicos
 
@@ -334,7 +360,7 @@ No hay desviaciones que justificar: un solo programa, sin servidor remoto ni bas
 
 ## Discrepancias detectadas
 
-No se ha editado `spec.md` ni H1. El equipo decide cómo corregirlas.
+No se ha editado `spec.md` ni H1. El equipo decide cómo corregirlas. La lista que manda, con las opciones de cada una y las de `tasks.md` (Y-01 a Y-06), es [`discrepancias.md`](discrepancias.md): 13 pendientes del equipo, 1 resuelta (X-08).
 
 | # | Dónde | Qué pasa |
 |---|---|---|
@@ -345,4 +371,4 @@ No se ha editado `spec.md` ni H1. El equipo decide cómo corregirlas.
 | X-05 | H1 §8 | Dice «34 requisitos» (hay REQ-01 a REQ-35: 35) y «OPEN-01 a OPEN-10» (hay OPEN-01 a OPEN-12). |
 | X-06 | H1 §2.1 objetivo 4 frente a REQ-12 | El objetivo dice que ante una entrada no reconocida el robot «permanezca en reposo seguro»; REQ-12 solo dice que no se envía ningún comando (el robot sigue como estaba). |
 | X-07 | `spec.md` REQ-15 y REQ-16 | La prueba dice «`kwkL` durante la duración calibrada», pero ni H1 ni la spec dicen qué comando corta el giro al acabar ese tiempo. Está recogido en P-09. |
-| X-08 | `README.md` de H2 | El flujo pone `constitution.md` antes de `spec.md`, y no existe en el repositorio. |
+| X-08 | `README.md` de H2 | **Resuelta el 04/11/2026** (opción 1, decisión de Mario): existe `constitution.md`. |
