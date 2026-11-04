@@ -42,7 +42,7 @@ def test_rms_de_silencio_y_de_tono():
 
 def test_frase_empieza_con_la_voz_y_acaba_tras_el_silencio():
     bloques = [silencio()] * 10 + [tono()] * 20 + [silencio()] * 30
-    detector = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_bloques=2)
+    detector = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_s=0.1)
     frase = detector.cortar(con_horas(bloques))
     assert frase is not None
     # 2 de prerrollo + 20 de voz + 10 de silencio (0,5 s / 50 ms)
@@ -57,7 +57,7 @@ def test_sin_voz_no_hay_frase():
 
 
 def test_frase_larga_se_corta_en_el_maximo():
-    detector = DetectorDeFrase(max_frase_s=1.0, prerrollo_bloques=0)
+    detector = DetectorDeFrase(max_frase_s=1.0, prerrollo_s=0)
     frase = detector.cortar(con_horas([tono()] * 100))
     assert frase is not None
     assert frase.duracion_s == pytest.approx(1.0)
@@ -65,9 +65,30 @@ def test_frase_larga_se_corta_en_el_maximo():
 
 def test_pausa_corta_no_parte_la_frase():
     bloques = [tono()] * 10 + [silencio()] * 4 + [tono()] * 10 + [silencio()] * 20
-    frase = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_bloques=0).cortar(con_horas(bloques))
+    frase = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_s=0).cortar(con_horas(bloques))
     assert frase is not None
     assert frase.fin_voz == pytest.approx(23 * BLOQUE_S)
+
+
+def test_valores_por_defecto_esperan_0_9_s_y_guardan_0_3_s_antes():
+    bloques = [silencio()] * 20 + [tono()] * 10 + [silencio()] * 40
+    frase = DetectorDeFrase().cortar(con_horas(bloques))
+    assert frase is not None
+    assert frase.cierre - frase.fin_voz == pytest.approx(0.9)
+    # 6 bloques de prerrollo (0,3 s) + 10 de voz + 18 de silencio (0,9 s)
+    assert len(frase.audio) == (6 + 10 + 18) * 2 * MUESTRAS_POR_BLOQUE
+    assert frase.voz_s == pytest.approx(0.5)
+    assert frase.duracion_s == pytest.approx(0.3 + 0.5 + 0.9)
+
+
+def test_final_flojo_sigue_siendo_voz():
+    """Una sílaba final más baja que el umbral de inicio (pero sobre umbral × 0,6) no corta la frase."""
+    umbral = 3000
+    bloques = [tono(6000)] * 10 + [tono(3000)] * 6 + [silencio()] * 30  # RMS ≈ 4243 y ≈ 2121
+    frase = DetectorDeFrase(umbral, prerrollo_s=0).cortar(con_horas(bloques))
+    assert frase is not None
+    assert frase.fin_voz == pytest.approx(15 * BLOQUE_S)
+    assert frase.voz_s == pytest.approx(16 * BLOQUE_S)
 
 
 def test_calibrar_umbral_no_baja_del_minimo():
@@ -111,7 +132,7 @@ def test_captura_con_microfono_falso(microfono_falso):
     captura.abrir()
     try:
         bloques = captura.bloques()
-        frase = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_bloques=0).cortar(next(bloques) for _ in range(30))
+        frase = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_s=0).cortar(next(bloques) for _ in range(30))
     finally:
         captura.cerrar()
     assert frase is not None

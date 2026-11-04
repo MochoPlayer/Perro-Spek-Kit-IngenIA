@@ -53,7 +53,7 @@ def test_una_sesion_no_deja_ficheros_de_audio(tmp_path, monkeypatch, microfono_f
     microfono_falso.bloques = ([tono()] * 20 + [silencio()] * 20) * 3
     transcriptor = TranscriptorFalso(["Atenio, siéntate", "Atenio, camina", "Atenio, para"])
     interprete = Interprete(catalogo, reloj=reloj)
-    detector = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_bloques=0)
+    detector = DetectorDeFrase(silencio_fin_s=0.5, prerrollo_s=0)
     resultados = []
     with CapturaMicrofono() as captura:
         bloques = captura.bloques()

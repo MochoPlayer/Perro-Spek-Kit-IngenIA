@@ -18,7 +18,7 @@ CARPETA = Path(__file__).resolve().parent
 H3 = CARPETA.parents[1]
 sys.path.insert(0, str(H3 / "src"))
 
-from atenio.audio import SILENCIO_FIN_S, CapturaMicrofono, DetectorDeFrase, Frase  # noqa: E402
+from atenio.audio import PRERROLLO_S, SILENCIO_FIN_S, CapturaMicrofono, DetectorDeFrase, Frase, rms  # noqa: E402
 from atenio.catalogo import Catalogo, cargar_catalogo, normalizar  # noqa: E402
 from atenio.interprete import Interprete  # noqa: E402
 from atenio.modelos import TipoInterpretacion  # noqa: E402
@@ -47,7 +47,8 @@ class Medida:
 class Resultado:
     frase: str
     esperado: tuple[str, ...]
-    duracion_s: float
+    duracion_s: float  # toda la grabación
+    voz_s: float  # parte con voz
     medidas: list[Medida] = field(default_factory=list)
 
 
@@ -109,7 +110,7 @@ def evaluar(catalogo: Catalogo, texto: str, esperado: tuple[str, ...]) -> tuple[
 
 
 def medir_frase(frase: Frase, texto_esperado: str, esperado, motores, catalogo) -> Resultado:
-    resultado = Resultado(texto_esperado, esperado, frase.duracion_s)
+    resultado = Resultado(texto_esperado, esperado, frase.duracion_s, frase.voz_s)
     espera_silencio = frase.cierre - frase.fin_voz
     for motor in motores:
         t0 = time.perf_counter()
@@ -166,13 +167,13 @@ def escribir(salida: Path, cabecera: list[str], resultados: list[Resultado], mot
         "",
         "## Detalle por frase",
         "",
-        "| # | Frase esperada | Esperado | Motor | Texto del motor | Latencia (s) | Transcripción (s) | «Atenio» | Intérprete | Acierto |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "| # | Frase esperada | Esperado | Grabación / voz (s) | Motor | Texto del motor | Latencia (s) | Transcripción (s) | «Atenio» | Intérprete | Acierto |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for i, r in enumerate(resultados, 1):
         for m in r.medidas:
             lineas.append(
-                f"| {i} | {_celda(r.frase)} | {', '.join(r.esperado)} | {m.motor} | {_celda(m.texto)} | "
+                f"| {i} | {_celda(r.frase)} | {', '.join(r.esperado)} | {_coma(r.duracion_s)} / {_coma(r.voz_s)} | {m.motor} | {_celda(m.texto)} | "
                 f"{_coma(m.latencia_s)} | {_coma(m.transcripcion_s)} | {'sí' if m.atenio else 'no'} | "
                 f"{_celda(m.obtenido)} | {'sí' if m.orden_ok else 'no'} |"
             )
@@ -215,6 +216,11 @@ def ejecutar(
         if frase is None:
             print("  No se oyó voz. Se repite la frase.")
             continue
+        paso = 1600  # bloques de 50 ms
+        pico = max((rms(frase.audio[k : k + paso]) for k in range(0, len(frase.audio), paso)), default=0.0)
+        print(
+            f"  Grabación: {frase.duracion_s:.2f} s · voz: {frase.voz_s:.2f} s · pico RMS: {pico:.0f}"
+        )
         r = medir_frase(frase, texto, esperado, motores, catalogo)
         for m in r.medidas:
             marca = "OK " if m.orden_ok else "MAL"
@@ -233,15 +239,60 @@ def ejecutar(
     return resultados
 
 
+def microfonos() -> list[tuple[int, str]]:
+    import sounddevice as sd
+
+    apis = sd.query_hostapis()
+    return [
+        (i, f"{d['name']} ({apis[d['hostapi']]['name']}, {d['max_input_channels']} canales)")
+        for i, d in enumerate(sd.query_devices())
+        if d["max_input_channels"] > 0
+    ]
+
+
+def nombre_microfono(dispositivo) -> str:
+    import sounddevice as sd
+
+    return sd.query_devices(dispositivo, kind="input")["name"]
+
+
+def elegir_microfono(opcion: str | None, preguntar: Callable[[str], str] = input):
+    """None = el de Windows por defecto. «elegir» = lista y pregunta. «lista» = solo lista. Número o nombre = ese."""
+    if opcion is None:
+        return None
+    if opcion in ("lista", "elegir"):
+        import sounddevice as sd
+
+        defecto = sd.default.device[0]
+        print("Micrófonos (entrada):")
+        for i, nombre in microfonos():
+            print(f"  {i:3d}  {nombre}{'   ← por defecto' if i == defecto else ''}")
+        if opcion == "lista":
+            return "lista"
+        elegido = preguntar("Número del micrófono (Enter = por defecto) > ").strip()
+        return int(elegido) if elegido.isdigit() else None
+    return int(opcion) if opcion.isdigit() else opcion
+
+
 def main(argv=None) -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--motores", default=MOTORES_POR_DEFECTO, help=f"separados por coma (por defecto {MOTORES_POR_DEFECTO})")
     p.add_argument("--max", type=int, default=None, help="número máximo de frases")
     p.add_argument("--silencio", type=float, default=SILENCIO_FIN_S, help="silencio (s) que cierra la frase")
-    p.add_argument("--dispositivo", default=None, help="micrófono (número o nombre de sounddevice)")
+    p.add_argument("--prerrollo", type=float, default=PRERROLLO_S, help="audio (s) que se guarda antes de la voz")
+    p.add_argument(
+        "--mic",
+        nargs="?",
+        const="elegir",
+        default=None,
+        help="micrófono: número o nombre; «--mic» solo = lista y pregunta; «--mic lista» = lista y sale",
+    )
     p.add_argument("--salida", type=Path, default=None)
     a = p.parse_args(argv)
 
+    dispositivo = elegir_microfono(a.mic)
+    if dispositivo == "lista":
+        return
     frases = leer_frases()[: a.max]
     motores, cargas = [], []
     for nombre in a.motores.split(","):
@@ -251,19 +302,21 @@ def main(argv=None) -> None:
         cargas.append(f"{nombre.strip()} {_coma(time.perf_counter() - t0, 1)} s")
         print(cargas[-1])
 
-    dispositivo = int(a.dispositivo) if a.dispositivo and a.dispositivo.isdigit() else a.dispositivo
     with CapturaMicrofono(dispositivo) as captura:
         print("\nCalibrando el ruido de la sala: 1 s en silencio…")
         umbral = captura.calibrar(1.0)
         print(f"Umbral de voz (RMS): {umbral:.0f}")
-        detector = DetectorDeFrase(umbral, silencio_fin_s=a.silencio)
+        detector = DetectorDeFrase(umbral, silencio_fin_s=a.silencio, prerrollo_s=a.prerrollo)
+        print(f"Fin de frase tras {a.silencio:.2f} s de silencio; se guardan {a.prerrollo:.2f} s antes de la voz.")
         cabecera = [
             f"# Resultados del prototipo I-1 · {datetime.now():%Y-%m-%d %H:%M}",
             "",
             "Generado por `medir.py` con voz real. Solo texto: el audio no se guarda (REQ-24).",
             "",
             f"- Motores y tiempo de carga: {'; '.join(cargas)}.",
-            f"- Fin de frase: {_coma(a.silencio)} s de silencio (incluido en la latencia). Umbral de voz (RMS): {umbral:.0f}.",
+            f"- Micrófono: {nombre_microfono(dispositivo)}.",
+            f"- Fin de frase: {_coma(a.silencio)} s de silencio (incluido en la latencia). Prerrollo: {_coma(a.prerrollo)} s. "
+            f"Umbral de voz (RMS): {umbral:.0f} para empezar, {detector.umbral_fin:.0f} para seguir.",
             "- Latencia: desde el último bloque con voz hasta tener la orden del intérprete (falta el envío al robot).",
             "- vosk-flujo: Vosk recibe el audio mientras se habla; solo se cuenta el cierre del reconocimiento.",
             "- «Atenio»: es la primera palabra del texto (el intérprete lo exige, REQ-01).",

@@ -15,7 +15,9 @@ from typing import Callable, Iterable
 FRECUENCIA_HZ = 16_000
 BLOQUE_S = 0.05  # 50 ms por bloque
 MUESTRAS_POR_BLOQUE = int(FRECUENCIA_HZ * BLOQUE_S)
-SILENCIO_FIN_S = 0.6  # provisional: silencio que marca el fin de la frase (I-1)
+SILENCIO_FIN_S = 0.9  # provisional: silencio que marca el fin de la frase (I-1; con 0,6 s se cortaba «siéntate»)
+PRERROLLO_S = 0.3  # audio que se guarda antes del primer bloque con voz (consonantes suaves del inicio)
+FACTOR_UMBRAL_FIN = 0.6  # una vez dentro de la frase, basta este factor × umbral para seguir contando como voz
 MAX_FRASE_S = 8.0
 ESPERA_VOZ_S = 8.0  # sin voz en este tiempo: no hay frase
 UMBRAL_MINIMO = 300.0  # RMS mínimo (int16) que cuenta como voz; provisional
@@ -23,15 +25,24 @@ UMBRAL_MINIMO = 300.0  # RMS mínimo (int16) que cuenta como voz; provisional
 
 @dataclass(frozen=True)
 class Frase:
-    """Una frase capturada. `audio`: PCM int16 mono 16 kHz. `fin_voz`: hora (perf_counter) del último bloque con voz."""
+    """Una frase capturada. `audio`: PCM int16 mono 16 kHz. Horas en segundos (perf_counter)."""
 
     audio: bytes
-    fin_voz: float
+    fin_voz: float  # hora del último bloque con voz
     cierre: float  # hora en que se dio la frase por terminada (fin_voz + silencio)
+    inicio_voz: float | None = None  # hora del primer bloque con voz
 
     @property
     def duracion_s(self) -> float:
+        """Duración de toda la grabación (prerrollo + voz + silencio final)."""
         return len(self.audio) / 2 / FRECUENCIA_HZ
+
+    @property
+    def voz_s(self) -> float:
+        """Duración de la parte con voz (del primer al último bloque con voz, ambos incluidos)."""
+        if self.inicio_voz is None:
+            return self.duracion_s
+        return self.fin_voz - self.inicio_voz + BLOQUE_S
 
 
 def rms(bloque: bytes) -> float:
@@ -46,7 +57,8 @@ def rms(bloque: bytes) -> float:
 class DetectorDeFrase:
     """Corta una frase de una serie de bloques: empieza con el primer bloque con voz y acaba tras `silencio_fin_s` sin voz.
 
-    No depende del micrófono: recibe (bloque, hora) y se prueba con bloques sintéticos.
+    Para empezar hace falta `umbral`; para seguir en la frase basta `umbral × factor_umbral_fin`, así las
+    sílabas flojas del final («-tate») no la cortan. No depende del micrófono: recibe (bloque, hora).
     """
 
     def __init__(
@@ -54,16 +66,20 @@ class DetectorDeFrase:
         umbral: float = UMBRAL_MINIMO,
         *,
         silencio_fin_s: float = SILENCIO_FIN_S,
+        prerrollo_s: float = PRERROLLO_S,
+        factor_umbral_fin: float = FACTOR_UMBRAL_FIN,
         max_frase_s: float = MAX_FRASE_S,
         espera_voz_s: float = ESPERA_VOZ_S,
         bloque_s: float = BLOQUE_S,
-        prerrollo_bloques: int = 4,
     ):
         self.umbral = umbral
+        self.umbral_fin = umbral * factor_umbral_fin
+        self.silencio_fin_s = silencio_fin_s
+        self.prerrollo_s = prerrollo_s
         self._bloques_silencio_fin = max(1, round(silencio_fin_s / bloque_s))
         self._max_bloques = round(max_frase_s / bloque_s)
         self._espera_bloques = round(espera_voz_s / bloque_s)
-        self._prerrollo = prerrollo_bloques  # bloques previos a la voz que se guardan (inicio suave)
+        self._prerrollo = max(0, round(prerrollo_s / bloque_s))
 
     def cortar(self, bloques: Iterable[tuple[bytes, float]]) -> Frase | None:
         """Devuelve la frase, o None si no hubo voz en `espera_voz_s`."""
@@ -72,15 +88,14 @@ class DetectorDeFrase:
         en_voz = False
         silencio = 0
         esperados = 0
-        fin_voz = 0.0
-        hora = 0.0
+        inicio_voz = fin_voz = hora = 0.0
         for bloque, hora in bloques:
-            hay_voz = rms(bloque) >= self.umbral
+            energia = rms(bloque)
             if not en_voz:
-                if hay_voz:
+                if energia >= self.umbral:
                     en_voz = True
                     frase = previos + [bloque]
-                    fin_voz = hora
+                    inicio_voz = fin_voz = hora
                 else:
                     previos = (previos + [bloque])[-self._prerrollo :] if self._prerrollo else []
                     esperados += 1
@@ -88,15 +103,15 @@ class DetectorDeFrase:
                         return None
                 continue
             frase.append(bloque)
-            if hay_voz:
+            if energia >= self.umbral_fin:
                 silencio = 0
                 fin_voz = hora
             else:
                 silencio += 1
             if silencio >= self._bloques_silencio_fin or len(frase) >= self._max_bloques:
-                return Frase(b"".join(frase), fin_voz, hora)
+                return Frase(b"".join(frase), fin_voz, hora, inicio_voz)
         if en_voz:  # se acabaron los bloques en mitad de la frase
-            return Frase(b"".join(frase), fin_voz, hora)
+            return Frase(b"".join(frase), fin_voz, hora, inicio_voz)
         return None
 
 
