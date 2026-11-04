@@ -30,6 +30,11 @@ class Estado(Enum):
     PARADA = "Parada"
 
 
+# Textos del evento ESTADO_CONEXION (T060, REQ-19): la interfaz los muestra tal cual.
+ESTADO_CONECTADO = "conectado"
+ESTADO_DESCONECTADO = "desconectado"
+
+
 def aviso_duracion_sin_medir(comando: str) -> str:
     """P-03: el catálogo no tiene la duración de este comando."""
     return f"duración de «{comando}» sin medir: las órdenes en cola esperan a «para» o al botón de parada"
@@ -70,7 +75,8 @@ class GestorAcciones:
         self._fin_paso: float | None = None  # hora estimada de fin del paso en curso (None = sin medir)
         self._ultima_orden = reloj.ahora()  # REQ-31: hora de la última orden válida
         self._ultimo_envio: float | None = None
-        self._conexion: bool | None = None  # último estado de conexión publicado (T060, U2)
+        # T060: último estado de conexión conocido; tick() publica un evento cuando cambia.
+        self._conexion_conocida = enlace.conectado
 
     # ------------------------------------------------------------------ consultas
 
@@ -95,6 +101,20 @@ class GestorAcciones:
     @property
     def ultimo_envio(self) -> float | None:
         return self._ultimo_envio
+
+    # ------------------------------------------------------------------ conexión (T060)
+
+    def conectar(self) -> bool:
+        """Abre el enlace y publica el estado de conexión (REQ-19). Si no conecta, avisa (REQ-25)."""
+        conectado = self._enlace.conectar()
+        self._publicar_conexion(conectado)
+        if not conectado:
+            self._avisar(AVISO_NO_CONECTADO)
+        return conectado
+
+    def publicar_estado_conexion(self) -> None:
+        """Publica el estado actual, p. ej. cuando la interfaz se abre y necesita mostrarlo (REQ-19)."""
+        self._publicar_conexion(self._enlace.conectado)
 
     # ------------------------------------------------------------------ entradas
 
@@ -126,12 +146,6 @@ class GestorAcciones:
         if self._cola and self.estado in (Estado.LIBRE, Estado.REPOSO):
             self._enviar_siguiente()
 
-    def conectar(self) -> bool:
-        """T060, U2: conecta el enlace si hace falta y publica el estado de conexión (también al arrancar)."""
-        conectado = self._enlace.conectado or self._enlace.conectar()
-        self._publicar_conexion(conectado, siempre=True)
-        return conectado
-
     def pulsar_parada(self) -> None:
         """Botón de parada de emergencia (REQ-30). Un clic activa; el siguiente desactiva."""
         if self.estado is Estado.PARADA:
@@ -149,8 +163,6 @@ class GestorAcciones:
 
     def tick(self) -> None:
         """Avanza el gestor hasta la hora del reloj: líneas del robot, fin de pasos y reposo."""
-        if self._conexion is not None and self._enlace.conectado != self._conexion:  # T060: cambio externo
-            self._publicar_conexion(self._enlace.conectado)
         for linea in self._enlace.leer_lineas():
             if es_bateria_baja(linea):  # REQ-33
                 self._avisar(AVISO_BATERIA_BAJA)
@@ -165,6 +177,9 @@ class GestorAcciones:
 
         if self._toca_reposo(ahora):  # REQ-31
             self._reposo_por_inactividad()
+
+        if self._enlace.conectado != self._conexion_conocida:  # T060: p. ej. cable desconectado
+            self._publicar_conexion(self._enlace.conectado)
 
     # ------------------------------------------------------------------ interno
 
@@ -222,15 +237,14 @@ class GestorAcciones:
         self._fin_paso = None
         if self.estado is not Estado.PARADA:
             self.estado = Estado.LIBRE
-        self._publicar_conexion(False, siempre=True)
+        self._publicar_conexion(False)
         self._avisar(AVISO_CONEXION_PERDIDA)
         return False
 
-    def _publicar_conexion(self, conectado: bool, *, siempre: bool = False) -> None:
-        """Evento «estado de conexión» (REQ-19, T060): «conectado» o «desconectado», si cambia o si `siempre`."""
-        if siempre or conectado != self._conexion:
-            self._conexion = conectado
-            self.eventos.publicar(TipoEvento.ESTADO_CONEXION, "conectado" if conectado else "desconectado")
+    def _publicar_conexion(self, conectado: bool) -> None:
+        self._conexion_conocida = conectado
+        texto = ESTADO_CONECTADO if conectado else ESTADO_DESCONECTADO
+        self.eventos.publicar(TipoEvento.ESTADO_CONEXION, texto)
 
     def _avisar(self, texto: str) -> None:
         self.eventos.publicar(TipoEvento.AVISO, texto)

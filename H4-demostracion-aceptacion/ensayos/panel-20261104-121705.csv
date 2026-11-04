@@ -1,0 +1,34 @@
+comando,duracion_s,respuestas,nota
+kup,0.86,G | k,el robot respondió la primera letra
+kwkF,0.25,k,el robot respondió la primera letra
+kup,0.82,G | k,el robot respondió la primera letra
+ktrF,0.25,k,el robot respondió la primera letra
+ksit,0.94,G | k,el robot respondió la primera letra
+kwkL,0.36,k,el robot respondió la primera letra
+kwkF,0.42,G | k,el robot respondió la primera letra
+ksit,0.83,k,el robot respondió la primera letra
+khi,5.36,k,el robot respondió la primera letra
+kwkF,0.26,k,el robot respondió la primera letra
+kwkL,0.23,k,el robot respondió la primera letra
+kwkR,0.20,k,el robot respondió la primera letra
+ktrF,0.19,k,el robot respondió la primera letra
+khi,3.49,,interrumpido por otro comando
+kbalance,1.50,k,el robot respondió la primera letra
+krest,0.82,k,el robot respondió la primera letra
+kbalance,0.75,k,el robot respondió la primera letra
+kup,0.17,k,el robot respondió la primera letra
+kbalance,0.15,k,el robot respondió la primera letra
+kup,0.11,k,el robot respondió la primera letra
+kbalance,0.14,k,el robot respondió la primera letra
+kup,0.18,k,el robot respondió la primera letra
+kbalance,0.12,k,el robot respondió la primera letra
+kbalance,0.14,k,el robot respondió la primera letra
+kup,0.11,k,el robot respondió la primera letra
+d,0.91,g | d,el robot respondió la primera letra
+krest,0.91,G | k,el robot respondió la primera letra
+d,0.48,g | d,el robot respondió la primera letra
+kwkF,0.40,G | k,el robot respondió la primera letra
+kwkL,0.25,k,el robot respondió la primera letra
+kwkR,0.21,k,el robot respondió la primera letra
+khi,4.25,,interrumpido por otro comando
+ksit,1.01,k,el robot respondió la primera letra

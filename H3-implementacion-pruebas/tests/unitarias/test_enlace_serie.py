@@ -63,6 +63,26 @@ def test_lee_lineas_completas_y_guarda_el_resto():
     assert e.leer_lineas() == []
 
 
+def test_se_marca_desconectado_si_falla_la_lectura():
+    """T060: cable quitado o Bluetooth caído; el gestor verá el cambio y lo publicará."""
+    e = falso()
+    e.conectar()
+    def mal(_n):
+        raise serial.SerialException("cable")
+    e._ser.read = mal
+    assert e.leer_lineas() == []
+    assert not e.conectado
+
+
+def test_descarta_los_bytes_cero_del_bluetooth():
+    e = falso()
+    e.conectar()
+    e._ser.write(b"\x00\x00\x00k\x00\n\x00\x00")
+    assert e.leer_lineas() == ["k"]
+    e._ser.write(b"\n")
+    assert e.leer_lineas() == []
+
+
 def test_deteccion_bateria_baja():
     assert es_bateria_baja("Low power: 6.5V")
     assert es_bateria_baja("low power")

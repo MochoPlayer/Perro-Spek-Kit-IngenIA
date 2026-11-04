@@ -50,7 +50,7 @@ def test_sin_robot_el_estado_es_desconectado_desde_el_arranque(catalogo):
     sistema, robot, recibidos = montar(catalogo, conectado=False)
     assert de_tipo(recibidos, TipoEvento.ESTADO_CONEXION) == ["desconectado"]
     sistema.oir("Perro, siéntate")
-    assert de_tipo(recibidos, TipoEvento.AVISO) == [AVISO_NO_CONECTADO]
+    assert de_tipo(recibidos, TipoEvento.AVISO) == [AVISO_NO_CONECTADO, AVISO_NO_CONECTADO]  # uno al arrancar, otro por la orden
     assert robot.cadenas == []
 
 
