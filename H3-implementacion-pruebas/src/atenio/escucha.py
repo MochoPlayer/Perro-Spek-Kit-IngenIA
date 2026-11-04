@@ -207,7 +207,7 @@ def crear_transcriptor(voz: dict) -> Transcriptor:
         )
     from atenio.transcripcion import TranscriptorWhisper
 
-    return TranscriptorWhisper(tamano, carpeta_modelos=carpeta, pista=voz.get("pista") or None)
+    return TranscriptorWhisper(tamano, carpeta_modelos=carpeta, pista=voz.get("pista") or None, solo_local=True)
 
 
 def crear_escucha(ajustes=None) -> Escucha:

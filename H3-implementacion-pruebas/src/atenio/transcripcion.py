@@ -73,7 +73,8 @@ class FlujoVosk:
 
 
 class TranscriptorWhisper:
-    """Faster-Whisper en CPU (int8). `tamano`: "tiny" o "base". `pista`: texto inicial opcional (por ejemplo «Atenio»)."""
+    """Faster-Whisper en CPU (int8). `tamano`: "tiny" o "base". `pista`: texto inicial opcional (por ejemplo «Atenio»).
+    `solo_local`: no baja nada de la red (la escucha del programa lo usa)."""
 
     def __init__(
         self,
@@ -83,6 +84,7 @@ class TranscriptorWhisper:
         idioma: str = "es",
         pista: str | None = None,
         nombre: str | None = None,
+        solo_local: bool = False,
     ):
         from faster_whisper import WhisperModel  # dependencia del motor
 
@@ -94,6 +96,7 @@ class TranscriptorWhisper:
             device="cpu",
             compute_type="int8",
             download_root=str(carpeta_modelos) if carpeta_modelos else None,
+            local_files_only=solo_local,  # True: no usa la red; el modelo debe estar ya bajado (REQ-24)
         )
 
     def transcribir(self, audio: bytes) -> str:
