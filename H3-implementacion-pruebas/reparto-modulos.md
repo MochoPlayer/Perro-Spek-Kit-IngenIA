@@ -71,14 +71,16 @@ flowchart LR
 
 | ☐ | Tarea | Qué hay que hacer | Depende de |
 |---|---|---|---|
-| ☐ | T019, T045 | `principal.py`: monta intérprete → gestor → enlace (real o simulado según `ajustes.json`). La clase `Cadena` de `tests/integracion/test_cadena.py` sirve de modelo. | — (se puede empezar ya) |
-| ☐ | T009 | `tests/unitarias/test_eventos.py`: los cuatro tipos de evento (texto reconocido, orden interpretada, estado de conexión, aviso). `eventos.py` ya existe. | — |
-| ☐ | T055 | `tests/integracion/test_eventos_interfaz.py`: un receptor de eventos recibe texto, orden, estado y aviso para una frase válida y una inválida. Incluye publicar el estado de conexión al conectar (hallazgo U2 de `coherencia.md`). | T009 |
-| ☐ | T056 | `src/atenio/interfaz/`: página web local con texto reconocido, orden, estado de conexión, avisos y **botón de parada** conectado a `pulsar_parada()`. | **P-06** (web o escritorio; el plan propone web, D-07) |
-| ☐ | T057 | `principal.py` completo: micrófono → transcripción → intérprete → gestor → enlace → interfaz. | T019, bloque B (voz), **P-07** |
-| ☐ | T058 | «Cómo instalar y ejecutar» en el `README.md` de H3. Prueba: alguien que no escribió el código lo arranca solo con esa sección. | T057, **P-07** («otro ordenador») |
+| ☑ | T019, T045 | `principal.py`: monta intérprete → gestor → enlace (real o simulado según `ajustes.json`). La clase `Cadena` de `tests/integracion/test_cadena.py` sirve de modelo. | — (se puede empezar ya) |
+| ☑ | T009 | `tests/unitarias/test_eventos.py`: los cuatro tipos de evento (texto reconocido, orden interpretada, estado de conexión, aviso). `eventos.py` ya existe. | — |
+| ☑ | T055 | `tests/integracion/test_eventos_interfaz.py`: un receptor de eventos recibe texto, orden, estado y aviso para una frase válida y una inválida. Incluye publicar el estado de conexión al conectar (hallazgo U2 de `coherencia.md`). | T009 |
+| ◐ | T056 | `src/atenio/interfaz/`: página web local con texto reconocido, orden, estado de conexión, avisos y **botón de parada** conectado a `pulsar_parada()`. **Hecho** (rama `h3/interfaz`): web local, sin cerrar. | **P-06** (Mario eligió web local el 04/11; falta el equipo) |
+| ◐ | T057 | `principal.py` completo: micrófono → transcripción → intérprete → gestor → enlace → interfaz. **Hecho sin voz real**: `python -m atenio --voz` usa `atenio.escucha` si existe. | T019, bloque B (voz), **P-07** |
+| ◐ | T058 | «Cómo instalar y ejecutar» en el `README.md` de H3. Prueba: alguien que no escribió el código lo arranca solo con esa sección. **Parcial**: un portátil, sin voz. | T057, **P-07** («otro ordenador») |
 
 **Decisiones del equipo que necesita**: P-06 (tipo de interfaz), P-07 (¿un portátil o dos?).
+
+☑ hecha · ◐ código hecho, falta una decisión del equipo o la voz real (estado 04/11, rama `h3/interfaz`).
 
 ---
 
@@ -131,7 +133,7 @@ flowchart LR
 | ☐ | T062, T063 | Reposo por inactividad (T = 5 min demo / 15 min uso real). Código hecho. | **P-05** |
 | ☐ | T035, T038 (parte del gestor) | «para» vacía la cola o no. Código hecho con «vacía» (ajuste). | **P-04** |
 | ☐ | T061 | Pérdida de conexión durante una acción. Código hecho. | **P-08** |
-| ☐ | T060 | Publicar el estado de conexión como evento (para la interfaz). | — |
+| ☑ | T060 | Publicar el estado de conexión como evento (para la interfaz). | — |
 | ☐ | T065 | Nunca enviar `G` ni `g` (giroscopio). Código hecho. | **Y-01** |
 | ☐ | T066, T067 | Órdenes opcionales: «baila», «media vuelta», «da una vuelta». | T080, **P-09**, X-07 |
 | ☐ | T072 a T079, T081 | Pruebas con el robot real y el programa completo (H4): cada orden, parada, encadenadas, desconexión, reposo, batería baja, levantarlo, giros. | T057 (bloque A), P-02 |
