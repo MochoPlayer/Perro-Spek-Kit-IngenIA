@@ -4,6 +4,8 @@
 
 **Mínimo exigido:** implementación generada con apoyo de IA, revisión del código y **pruebas reproducibles sin necesidad del robot físico**.
 
+**Reparto del trabajo:** [`reparto-modulos.md`](reparto-modulos.md) (interfaz, intérprete, órdenes y robot, y bloque común). **Estado de cada requisito:** [`plan-pruebas.md`](plan-pruebas.md).
+
 ## Flujo de trabajo
 
 Cada caja indica en cursiva el documento que produce. Leyenda debajo del diagrama.
