@@ -1,23 +1,23 @@
-# REQ-12 (SC-005): 20 entradas con «Atenio» que no se interpretan como orden → NO_ENTENDIDA y aviso.
+# REQ-12 (SC-005): 20 entradas con «Perro» que no se interpretan como orden → NO_ENTENDIDA y aviso.
 # Texto de ejemplo en lugar de ruido real (D-09). Regla provisional: cifras o más palabras que la
 # orden más larga del catálogo (discrepancia Y-02). Borrador de la IA: lo revisa el equipo (T011).
-Atenio, qué hora es en Madrid ahora
-Atenio 3 2 1
-Atenio, ehh mmm pues no sé qué decir
-Atenio la casa de la pradera azul
-Atenio, 42
-Atenio, ayer fuimos al cine con mi hermana
-Atenio, mañana hay examen de física
-Atenio, bla bla bla bla
-Atenio, el coche rojo está aparcado fuera
-Atenio, abc 123
-Atenio, esto es una prueba de micrófono
-Atenio, la la la la la
-Atenio, no me acuerdo de lo que iba a decir
-Atenio, quién ha ganado el partido de hoy
-Atenio, x7
-Atenio, hola hola hola hola
-Atenio, eh eh eh eh eh
-Atenio, que si que no que si que no
-Atenio, 2026
-Atenio, pásame el cargador del portátil por favor
+Perro, qué hora es en Madrid ahora
+Perro 3 2 1
+Perro, ehh mmm pues no sé qué decir
+Perro la casa de la pradera azul
+Perro, 42
+Perro, ayer fuimos al cine con mi hermana
+Perro, mañana hay examen de física
+Perro, bla bla bla bla
+Perro, el coche rojo está aparcado fuera
+Perro, abc 123
+Perro, esto es una prueba de micrófono
+Perro, la la la la la
+Perro, no me acuerdo de lo que iba a decir
+Perro, quién ha ganado el partido de hoy
+Perro, x7
+Perro, hola hola hola hola
+Perro, eh eh eh eh eh
+Perro, que si que no que si que no
+Perro, 2026
+Perro, pásame el cargador del portátil por favor

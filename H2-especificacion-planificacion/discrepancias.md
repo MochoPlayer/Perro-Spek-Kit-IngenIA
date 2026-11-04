@@ -1,10 +1,10 @@
 # H2 · Discrepancias por resolver
 
-**Estado**: 1 de 14 resueltas (X-08) · **Fecha**: 2026-10-26, actualizado 2026-11-04 · **Documentos revisados**: `spec.md`, `plan.md` (`7b92170`), `tasks.md` (`c5e518b`) y H1.
+**Estado**: 1 de 15 resueltas (X-08) · **Fecha**: 2026-10-26, actualizado 2026-11-04 · **Documentos revisados**: `spec.md`, `plan.md` (`7b92170`), `tasks.md` (`c5e518b`) y H1.
 
 ## Cómo retomar el trabajo
 
-Este es el **siguiente paso de H2**. Antes de entregar hay que resolver las 14 discrepancias de abajo.
+Este es el **siguiente paso de H2**. Antes de entregar hay que resolver las 15 discrepancias de abajo.
 
 1. El equipo escribe su decisión en la columna «Respuesta del equipo» (las dudas para el profesor van por Teams).
 2. Quien trabaje con la IA le pide: «resuelve las discrepancias de `discrepancias.md` con las respuestas del equipo».
@@ -21,6 +21,7 @@ Hay una copia editable de esta lista en Claude Docs: <https://claude.ai/artifact
 
 | ID | Qué pasa | Opciones | Respuesta del equipo |
 | --- | --- | --- | --- |
+| Z-01 | **Palabra de activación.** Mario pide «Perro» en lugar de «Atenio» (04/11). El código ya usa el ajuste `palabra_activacion` de `H3-implementacion-pruebas/datos/ajustes.json` (valor «perro»). | Falta: confirmar en equipo y cambiar REQ-01, REQ-35, decisión 055 y los textos de H1/spec. | |
 | Y-02 | **Aviso por ruido o ignorar.** REQ-12 pide el aviso «no se ha entendido bien» ante ruido o frases sin sentido. El contrato del intérprete dice que sin «Atenio» no se hace nada ni se avisa (REQ-01). El ruido sin «Atenio» cae en las dos reglas. Tampoco hay criterio para separar «sin sentido» (REQ-12) de «orden fuera del catálogo» (REQ-13). Afecta a T021, T022 y T024. | 1) Sin «Atenio» se ignora todo, ruido incluido; el aviso solo sale cuando hay «Atenio». 2) Aviso también ante ruido sin «Atenio». Además hay que escribir la regla que separa «sin sentido» de «fuera del catálogo». | |
 | Y-04 | **«Ningún comando de movimiento» o «ningún comando».** REQ-12 dice «de movimiento»; REQ-13 dice «ningún comando». Las pruebas (T022) comprueban que no sale ningún comando en los dos casos. | 1) Cambiar REQ-12 a «ningún comando». 2) Dejarlo y listar qué comandos que no son de movimiento se permiten. | |
 | Y-03 | **Parada de emergencia y «reposo».** REQ-30 dice «modo reposo». D-11 propone `d` para la parada. En REQ-08 `d` es «tumbarse y apagar los motores», no reposo (`krest`). | 1) Parada con `d` y cambiar la redacción de REQ-30 (o la de REQ-08). 2) Parada con `krest`. Se prueba en la sesión 2 con el robot (OPEN-11, P-05). | |

@@ -44,9 +44,9 @@ def test_la_voz_llega_igual_que_una_frase_escrita(catalogo):
     assert not sistema.voz_activa
     sistema.arrancar(con_bucle=False)
     assert sistema.voz_activa
-    escucha.decir("Atenio, siéntate")
-    sistema.oir("Atenio, saluda")  # caja de texto
-    assert sistema.eventos.textos(TipoEvento.TEXTO_RECONOCIDO) == ["Atenio, siéntate", "Atenio, saluda"]
+    escucha.decir("Perro, siéntate")
+    sistema.oir("Perro, saluda")  # caja de texto
+    assert sistema.eventos.textos(TipoEvento.TEXTO_RECONOCIDO) == ["Perro, siéntate", "Perro, saluda"]
     assert robot.cadenas[0] == "ksit"
     sistema.detener()
     assert not escucha.activa
@@ -64,7 +64,7 @@ def test_el_registro_de_la_interfaz_anota_lo_enviado(catalogo):
     robot = EnlaceSimulado(reloj)
     sistema = Sistema(robot, reloj, catalogo=catalogo)
     sistema.arrancar(con_bucle=False)
-    sistema.oir("Atenio, siéntate")
+    sistema.oir("Perro, siéntate")
     foto = sistema.foto()
     assert foto["registro"] == [{"t": 0.0, "comando": "ksit"}]
     assert foto["conectado"] is True
@@ -131,5 +131,5 @@ def test_serie_sin_puerto_arranca_desconectado():
     sistema = crear_sistema("serie", reloj=RelojSimulado())
     sistema.arrancar(con_bucle=False)
     assert sistema.eventos.textos(TipoEvento.ESTADO_CONEXION) == ["desconectado"]
-    sistema.oir("Atenio, siéntate")
+    sistema.oir("Perro, siéntate")
     assert "robot no conectado" in sistema.eventos.avisos

@@ -101,7 +101,7 @@ def comando_de(catalogo: Catalogo, id_orden: str) -> list[str]:
 @pytest.mark.parametrize("orden,comando", COMANDO_NIVEL_1.items())
 def test_h1_cada_orden_del_nivel_1_llega_como_su_comando(cadena, orden, comando):
     """SC-002, REQ-02 a REQ-11, REQ-20: cadena exacta registrada por el simulado."""
-    cadena.decir(f"Atenio, {orden}")
+    cadena.decir(f"Perro, {orden}")
     assert cadena.comandos == [comando]
     assert cadena.robot.registro[0][0] == 0.0  # se envía en el acto (parte de software de REQ-21)
 
@@ -121,25 +121,25 @@ def test_h1_las_20_frases_sin_nombre_no_producen_comando(cadena):
         cadena.esperar(0.5)
     assert cadena.comandos == []
     assert cadena.avisos == []
-    cadena.decir("Atenio, siéntate")
+    cadena.decir("Perro, siéntate")
     assert cadena.comandos == ["ksit"]
 
 
-def test_h1_atenio_solo_y_orden_dentro_de_la_espera(cadena):
+def test_h1_perro_solo_y_orden_dentro_de_la_espera(cadena):
     """REQ-35, escenario 5."""
-    cadena.decir("Atenio")
+    cadena.decir("Perro")
     cadena.esperar(cadena.ajustes.espera_orden_s - 1)
     cadena.decir("siéntate")
     assert cadena.comandos == ["ksit"]
 
 
-def test_h1_atenio_solo_sin_orden_vuelve_a_la_escucha_normal(cadena):
+def test_h1_perro_solo_sin_orden_vuelve_a_la_escucha_normal(cadena):
     """REQ-35: ningún comando, y la siguiente orden con nombre se atiende."""
-    cadena.decir("Atenio")
+    cadena.decir("Perro")
     cadena.esperar(cadena.ajustes.espera_orden_s + 1)
     cadena.decir("siéntate")
     assert cadena.comandos == []
-    cadena.decir("Atenio, siéntate")
+    cadena.decir("Perro, siéntate")
     assert cadena.comandos == ["ksit"]
 
 
@@ -171,7 +171,7 @@ def test_h2_orden_valida_tras_20_entradas_invalidas(cadena):
     """REQ-23, SC-006."""
     for frase in leer_frases("sin_sentido.txt"):
         cadena.decir(frase)
-    cadena.decir("Atenio, levántate")
+    cadena.decir("Perro, levántate")
     assert cadena.comandos == ["kup"]
 
 
@@ -181,7 +181,7 @@ def test_h2_orden_valida_tras_20_entradas_invalidas(cadena):
 def test_h3_el_simulado_registra_la_cadena_exacta_y_la_hora(cadena):
     """REQ-20, REQ-26: sin robot ni puerto serie."""
     cadena.esperar(1.0)
-    cadena.decir("Atenio, siéntate")
+    cadena.decir("Perro, siéntate")
     assert cadena.robot.registro == [(pytest.approx(1.0), "ksit")]
 
 
@@ -201,7 +201,7 @@ def test_h4_frases_encadenadas_llegan_en_el_orden_dicho(cadena, frase):
 
 def test_h4_cada_comando_sale_al_terminar_el_anterior(cadena):
     """REQ-29, ESC-10: kwkF (duración de prueba) y después ksit."""
-    cadena.decir("Atenio, camina y siéntate")
+    cadena.decir("Perro, camina y siéntate")
     cadena.esperar(DURACION_PRUEBA_S - 0.25)
     assert cadena.comandos == ["kwkF"]
     cadena.esperar(0.25)
@@ -211,7 +211,7 @@ def test_h4_cada_comando_sale_al_terminar_el_anterior(cadena):
 
 def test_h4_orden_fuera_del_catalogo_se_salta_con_aviso(cadena):
     """REQ-29, escenario 2, SC-009."""
-    cadena.decir("Atenio, camina y bailoteo y siéntate")
+    cadena.decir("Perro, camina y bailoteo y siéntate")
     cadena.esperar(5.0)
     assert cadena.comandos == ["kwkF", "ksit"]
     assert any("bailoteo" in a for a in cadena.avisos)
@@ -219,11 +219,11 @@ def test_h4_orden_fuera_del_catalogo_se_salta_con_aviso(cadena):
 
 def test_h4_tres_ordenes_con_robot_ocupado_en_orden_de_llegada(cadena):
     """REQ-32, SC-010, ESC-06."""
-    cadena.decir("Atenio, camina")
+    cadena.decir("Perro, camina")
     cadena.esperar(0.25)
-    cadena.decir("Atenio, siéntate")
-    cadena.decir("Atenio, levántate")
-    cadena.decir("Atenio, saluda")
+    cadena.decir("Perro, siéntate")
+    cadena.decir("Perro, levántate")
+    cadena.decir("Perro, saluda")
     assert cadena.comandos == ["kwkF"]
     cadena.esperar(10.0)
     assert cadena.comandos == ["kwkF", "ksit", "kup", "khi"]
@@ -236,9 +236,9 @@ def test_h4_tres_ordenes_con_robot_ocupado_en_orden_de_llegada(cadena):
 
 def test_h5_para_con_accion_en_curso_envia_krest_y_no_queda_en_cola(cadena):
     """REQ-07, SC-012."""
-    cadena.decir("Atenio, camina")
+    cadena.decir("Perro, camina")
     cadena.esperar(0.5)
-    cadena.decir("Atenio, para")
+    cadena.decir("Perro, para")
     assert cadena.robot.registro == [(0.0, "kwkF"), (pytest.approx(0.5), "krest")]
     assert cadena.gestor.cola == ()
 
@@ -246,9 +246,9 @@ def test_h5_para_con_accion_en_curso_envia_krest_y_no_queda_en_cola(cadena):
 @pytest.mark.discrepancia("OPEN-12")
 def test_h5_para_con_ordenes_en_cola_las_descarta(cadena):
     """D-10 opción A: «para» vacía la cola."""
-    cadena.decir("Atenio, camina y siéntate")
-    cadena.decir("Atenio, levántate")
-    cadena.decir("Atenio, para")
+    cadena.decir("Perro, camina y siéntate")
+    cadena.decir("Perro, levántate")
+    cadena.decir("Perro, para")
     cadena.esperar(10.0)
     assert cadena.comandos == ["kwkF", "krest"]
 
@@ -256,7 +256,7 @@ def test_h5_para_con_ordenes_en_cola_las_descarta(cadena):
 @pytest.mark.discrepancia("OPEN-12")
 def test_h5_para_dentro_de_una_frase_descarta_el_resto(cadena):
     """Casos límite: «camina y para y siéntate» (D-10, P-04)."""
-    cadena.decir("Atenio, camina y para y siéntate")
+    cadena.decir("Perro, camina y para y siéntate")
     cadena.esperar(10.0)
     assert cadena.comandos == ["krest"]
 
@@ -264,18 +264,18 @@ def test_h5_para_dentro_de_una_frase_descarta_el_resto(cadena):
 @pytest.mark.discrepancia("Y-03")
 def test_h5_parada_de_emergencia_completa(cadena):
     """REQ-30, SC-011: comando de parada, cola vacía, 10 órdenes sin comando, segundo clic."""
-    cadena.decir("Atenio, camina y siéntate y levántate")
+    cadena.decir("Perro, camina y siéntate y levántate")
     cadena.esperar(0.5)
     cadena.gestor.pulsar_parada()
     assert cadena.comandos == ["kwkF", cadena.ajustes.comando_parada]
     assert cadena.gestor.cola == ()
     for _ in range(10):
-        cadena.decir("Atenio, siéntate")
+        cadena.decir("Perro, siéntate")
     cadena.esperar(5.0)
     assert cadena.comandos == ["kwkF", "d"]
     assert cadena.avisos.count(AVISO_PARADA_ACTIVA) == 11
     cadena.gestor.pulsar_parada()
-    cadena.decir("Atenio, siéntate")
+    cadena.decir("Perro, siéntate")
     assert cadena.comandos == ["kwkF", "d", "ksit"]
 
 
@@ -285,7 +285,7 @@ def test_h5_parada_de_emergencia_completa(cadena):
 def test_h6_sin_conexion_no_envia_y_avisa(catalogo):
     """REQ-25, ESC-07."""
     cadena = Cadena(con_duraciones_de_prueba(catalogo), conectado=False)
-    cadena.decir("Atenio, siéntate")
+    cadena.decir("Perro, siéntate")
     assert cadena.comandos == []
     assert cadena.avisos == [AVISO_NO_CONECTADO]
 
@@ -295,14 +295,14 @@ def test_h6_sin_conexion_no_envia_y_avisa(catalogo):
 
 def test_h7_reposo_tras_T_y_una_orden_lo_despierta(cadena):
     """REQ-31, ESC-03: comando de reposo sin aviso; la orden siguiente se ejecuta."""
-    cadena.decir("Atenio, siéntate")
+    cadena.decir("Perro, siéntate")
     cadena.esperar(T_PRUEBA_S - 1)
     assert cadena.comandos == ["ksit"]
     cadena.esperar(1.0)
     assert cadena.comandos == ["ksit", cadena.ajustes.comando_reposo]
     assert cadena.gestor.estado is Estado.REPOSO
     assert cadena.avisos == []
-    cadena.decir("Atenio, levántate")
+    cadena.decir("Perro, levántate")
     assert cadena.comandos == ["ksit", "krest", "kup"]
 
 
@@ -321,9 +321,9 @@ def test_h7_low_power_avisa_de_cargar_el_robot(cadena):
 def test_catalogo_real_marcha_sin_duracion_bloquea_la_cola_hasta_para(catalogo):
     """Con `kwkF` sin duración (null), «siéntate» espera; «para» corta la marcha y vacía la cola."""
     cadena = Cadena(catalogo)
-    cadena.decir("Atenio, camina y siéntate")
+    cadena.decir("Perro, camina y siéntate")
     cadena.esperar(10.0)
     assert cadena.comandos == ["kwkF"]
-    cadena.decir("Atenio, para")
+    cadena.decir("Perro, para")
     assert cadena.comandos == ["kwkF", "krest"]
     assert cadena.gestor.cola == ()

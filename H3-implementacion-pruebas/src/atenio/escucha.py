@@ -26,7 +26,7 @@ VOZ_POR_DEFECTO = {
     "silencio_s": SILENCIO_FIN_S,
     "prerrollo_s": PRERROLLO_S,
     "calibrar_s": 1.0,
-    "pista": "Atenio",
+    "pista": "Perro",
     "carpeta_modelos": "prototipos/motor-voz/modelos",
     "modelo_vosk": "vosk-model-small-es-0.42",
     "frases": [],  # solo para el motor «falso»

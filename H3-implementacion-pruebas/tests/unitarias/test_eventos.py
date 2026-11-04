@@ -38,7 +38,7 @@ def test_varios_receptores_reciben_lo_mismo():
 
 def test_consultas_por_tipo():
     eventos = Eventos()
-    eventos.publicar(TipoEvento.TEXTO_RECONOCIDO, "Atenio, siéntate")
+    eventos.publicar(TipoEvento.TEXTO_RECONOCIDO, "Perro, siéntate")
     eventos.publicar(TipoEvento.AVISO, "uno")
     eventos.publicar(TipoEvento.ORDEN_INTERPRETADA, "REQ-02")
     eventos.publicar(TipoEvento.AVISO, "dos")

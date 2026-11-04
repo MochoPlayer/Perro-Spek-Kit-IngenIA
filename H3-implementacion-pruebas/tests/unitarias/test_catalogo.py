@@ -94,7 +94,7 @@ def test_todos_los_comandos_estan_en_la_lista_segura(catalogo):
 
 
 def test_normalizar():
-    assert normalizar("¡Atenio, SIÉNTATE!") == "atenio sientate"
+    assert normalizar("¡Perro, SIÉNTATE!") == "perro sientate"
     assert normalizar("  da   una\tvuelta ") == "da una vuelta"
     assert normalizar("mañana") == "mañana"
     assert normalizar("pingüino") == "pinguino"

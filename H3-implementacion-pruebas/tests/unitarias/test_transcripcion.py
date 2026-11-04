@@ -7,9 +7,9 @@ from atenio.transcripcion import Transcriptor, TranscriptorFalso
 
 
 def test_el_falso_devuelve_los_textos_en_orden_y_luego_vacio():
-    t = TranscriptorFalso(["atenio siéntate", "atenio camina"])
-    assert t.transcribir(b"\x00" * 10) == "atenio siéntate"
-    assert t.transcribir(b"\x00" * 20) == "atenio camina"
+    t = TranscriptorFalso(["perro siéntate", "perro camina"])
+    assert t.transcribir(b"\x00" * 10) == "perro siéntate"
+    assert t.transcribir(b"\x00" * 20) == "perro camina"
     assert t.transcribir(b"\x00" * 30) == ""
     assert t.recibido == [10, 20, 30]
 
@@ -22,7 +22,7 @@ def test_el_falso_cumple_la_interfaz():
 
 def test_texto_del_adaptador_llega_al_interprete(catalogo, reloj):
     """La salida del adaptador es la entrada del intérprete (REQ-18: motor externo + intérprete propio)."""
-    t = TranscriptorFalso(["Atenio, siéntate", ""])
+    t = TranscriptorFalso(["Perro, siéntate", ""])
     interprete = Interprete(catalogo, reloj=reloj)
     r = interprete.interpretar(t.transcribir(b"\x00" * 3200))
     assert r.tipo is TipoInterpretacion.ORDENES

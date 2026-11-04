@@ -1,12 +1,12 @@
-# REQ-13: 10 órdenes con «Atenio» que no están en el catálogo → FUERA_DEL_CATALOGO y aviso.
+# REQ-13: 10 órdenes con «Perro» que no están en el catálogo → FUERA_DEL_CATALOGO y aviso.
 # Borrador de la IA: lo revisa el equipo (tasks.md T011).
-Atenio, sígueme
-Atenio, bailoteo
-Atenio, salta
-Atenio, ven aquí
-Atenio, haz el muerto
-Atenio, voltereta
-Atenio, busca la pelota
-Atenio, corre
-Atenio, gira noventa grados
-Atenio, rueda
+Perro, sígueme
+Perro, bailoteo
+Perro, salta
+Perro, ven aquí
+Perro, haz el muerto
+Perro, voltereta
+Perro, busca la pelota
+Perro, corre
+Perro, gira noventa grados
+Perro, rueda

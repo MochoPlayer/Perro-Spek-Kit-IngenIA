@@ -1,9 +1,11 @@
 # Carga de ajustes.json (plan.md, «Ajustes»). Cubre REQ-31, REQ-35, OPEN-02, OPEN-07, OPEN-11.
+# `palabra_activacion`: el nombre que hay que decir antes de la orden (REQ-01; «perro» desde el 04/11).
 # La sección «voz» (motor, micrófono, cortes de frase; P-01) la usa escucha.py.
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+PALABRA_POR_DEFECTO = "perro"  # solo si ajustes.json no trae la clave
 RUTA_POR_DEFECTO = Path(__file__).resolve().parents[2] / "datos" / "ajustes.json"
 
 
@@ -21,6 +23,7 @@ class Ajustes:
     fin_de_linea: str
     provisionales: tuple[str, ...]  # claves marcadas «provisional»
     voz: dict = field(default_factory=dict)  # sección «voz» (escucha.py); vacía si falta
+    palabra_activacion: str = PALABRA_POR_DEFECTO  # REQ-01, REQ-35
 
 
 def cargar_ajustes(ruta: str | Path | None = None) -> Ajustes:
@@ -42,4 +45,5 @@ def cargar_ajustes(ruta: str | Path | None = None) -> Ajustes:
         fin_de_linea=v("fin_de_linea"),
         provisionales=tuple(k for k, e in datos.items() if e.get("provisional")),
         voz=dict(v("voz")) if "voz" in datos else {},
+        palabra_activacion=str(v("palabra_activacion")) if "palabra_activacion" in datos else PALABRA_POR_DEFECTO,
     )

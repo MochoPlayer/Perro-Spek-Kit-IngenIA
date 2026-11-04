@@ -61,7 +61,7 @@ def test_la_pagina_tiene_los_elementos_y_no_usa_recursos_externos(web):
 
 def test_una_frase_escrita_llega_al_registro_del_simulado(web):
     base, _, robot = web
-    estado, _, _ = pedir(base + "/frase", {"texto": "Atenio, siéntate"})
+    estado, _, _ = pedir(base + "/frase", {"texto": "Perro, siéntate"})
     assert estado == 200
     assert robot.cadenas == ["ksit"]
     foto = json.loads(pedir(base + "/estado")[2])
@@ -75,7 +75,7 @@ def test_una_frase_escrita_llega_al_registro_del_simulado(web):
 def test_estado_desde_devuelve_solo_lo_nuevo(web):
     base, _, _ = web
     primero = json.loads(pedir(base + "/estado")[2])
-    pedir(base + "/frase", {"texto": "Atenio, 3 4 5 6 7 8 9 10"})
+    pedir(base + "/frase", {"texto": "Perro, 3 4 5 6 7 8 9 10"})
     nuevo = json.loads(pedir(base + f"/estado?desde={primero['total_eventos']}")[2])
     assert [e["tipo"] for e in nuevo["eventos"]] == ["texto_reconocido", "aviso"]
     assert nuevo["eventos"][1]["texto"] == "no se ha entendido bien"
@@ -87,13 +87,13 @@ def test_el_boton_activa_y_desactiva_la_parada(web):
     r = json.loads(pedir(base + "/parada", metodo="POST")[2])
     assert r["parada"] is True
     assert robot.cadenas == [cargar_ajustes().comando_parada]
-    pedir(base + "/frase", {"texto": "Atenio, siéntate"})
+    pedir(base + "/frase", {"texto": "Perro, siéntate"})
     assert robot.cadenas == [cargar_ajustes().comando_parada]  # bloqueada
     foto = json.loads(pedir(base + "/estado")[2])
     assert foto["estado"] == "Parada" and "parada de emergencia activa" in [e["texto"] for e in foto["eventos"]]
     r = json.loads(pedir(base + "/parada", metodo="POST")[2])
     assert r["parada"] is False
-    pedir(base + "/frase", {"texto": "Atenio, siéntate"})
+    pedir(base + "/frase", {"texto": "Perro, siéntate"})
     assert robot.cadenas[-1] == "ksit"
 
 

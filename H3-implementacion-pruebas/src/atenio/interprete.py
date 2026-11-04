@@ -12,7 +12,6 @@ from atenio.modelos import Interpretacion, Orden, TipoInterpretacion
 AVISO_NO_ENTENDIDA = "no se ha entendido bien"  # REQ-12 (texto exacto de spec.md)
 AVISO_NO_DISPONIBLE = "orden no disponible"  # REQ-13 (spec.md no fija el texto exacto)
 
-PALABRAS_ACTIVACION = ("atenio",)  # OPEN-01: el repo no da variantes de transcripción
 PALABRAS_ENLACE = ("y", "luego")  # valor inicial de spec.md, casos límite (P-03)
 ESPERA_ACTIVACION_S = 5.0  # REQ-35, provisional (OPEN-02)
 
@@ -30,8 +29,8 @@ def aviso_no_disponible(parte: str) -> str:
 class Interprete:
     """Convierte una frase de texto en una Interpretacion.
 
-    Su único estado es la espera de REQ-35: tras «Atenio» solo, la siguiente frase dentro de
-    `espera_s` segundos cuenta como orden aunque no empiece por «Atenio».
+    Su único estado es la espera de REQ-35: tras la palabra de activación sola («Perro»), la siguiente frase dentro de
+    `espera_s` segundos cuenta como orden aunque no empiece por ella.
     """
 
     def __init__(
@@ -40,7 +39,7 @@ class Interprete:
         *,
         reloj: FuenteDeHora | None = None,
         espera_s: float = ESPERA_ACTIVACION_S,
-        palabras_activacion: tuple[str, ...] = PALABRAS_ACTIVACION,
+        palabras_activacion: tuple[str, ...] | None = None,
         palabras_enlace: tuple[str, ...] = PALABRAS_ENLACE,
         max_ordenes: int | None = None,
         max_palabras_orden: int | None = None,
@@ -58,6 +57,10 @@ class Interprete:
         self._catalogo = catalogo
         self._reloj = reloj
         self._espera_s = espera_s
+        if palabras_activacion is None:  # la palabra sale de ajustes.json («palabra_activacion»)
+            from atenio.ajustes import cargar_ajustes
+
+            palabras_activacion = (cargar_ajustes().palabra_activacion,)
         self._activacion = tuple(normalizar(p) for p in palabras_activacion)
         self._enlace = frozenset(normalizar(p) for p in palabras_enlace)
         if max_ordenes is not None and max_ordenes < 1:
@@ -110,7 +113,7 @@ class Interprete:
             self._activado_en = None
             return self._interpretar_ordenes(resto)
 
-        if self._activacion_vigente(hora):  # REQ-35: frase sin «Atenio» dentro de la espera
+        if self._activacion_vigente(hora):  # REQ-35: frase sin la palabra de activación dentro de la espera
             self._activado_en = None
             if not palabras:
                 return Interpretacion(TipoInterpretacion.NO_ENTENDIDA, avisos=(AVISO_NO_ENTENDIDA,))
@@ -141,7 +144,7 @@ class Interprete:
 
     def _interpretar_ordenes(self, palabras: list[str]) -> Interpretacion:
         partes = self._partir(palabras)
-        if not partes:  # p. ej. «Atenio y luego»
+        if not partes:  # p. ej. «Perro y luego»
             return Interpretacion(TipoInterpretacion.NO_ENTENDIDA, avisos=(AVISO_NO_ENTENDIDA,))
 
         ordenes: list[Orden] = []

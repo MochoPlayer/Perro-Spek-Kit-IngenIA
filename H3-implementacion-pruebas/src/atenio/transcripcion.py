@@ -73,7 +73,7 @@ class FlujoVosk:
 
 
 class TranscriptorWhisper:
-    """Faster-Whisper en CPU (int8). `tamano`: "tiny" o "base". `pista`: texto inicial opcional (por ejemplo «Atenio»).
+    """Faster-Whisper en CPU (int8). `tamano`: "tiny" o "base". `pista`: texto inicial opcional (por ejemplo «Perro»).
     `solo_local`: no baja nada de la red (la escucha del programa lo usa)."""
 
     def __init__(

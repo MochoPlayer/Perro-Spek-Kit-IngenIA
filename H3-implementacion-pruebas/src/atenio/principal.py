@@ -99,6 +99,7 @@ class Sistema:
             reloj=reloj,
             espera_s=self.ajustes.espera_orden_s,
             max_ordenes=self.ajustes.max_ordenes_por_frase,
+            palabras_activacion=(self.ajustes.palabra_activacion,),
         )
         self.gestor = GestorAcciones(
             self.enlace,

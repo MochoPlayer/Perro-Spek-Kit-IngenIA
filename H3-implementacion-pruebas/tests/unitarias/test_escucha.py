@@ -32,16 +32,16 @@ def esperar(condicion, limite_s: float = 2.0) -> None:
 
 def test_falsa_entrega_las_frases_en_orden_y_se_salta_las_vacias():
     oidas: list[str] = []
-    escucha = EscuchaFalsa(["Atenio, siéntate", "", "  ", "Atenio, camina"])
+    escucha = EscuchaFalsa(["Perro, siéntate", "", "  ", "Perro, camina"])
     escucha.iniciar(oidas.append)
     escucha.esperar(2)
-    assert oidas == ["Atenio, siéntate", "Atenio, camina"]
+    assert oidas == ["Perro, siéntate", "Perro, camina"]
     assert escucha.activa is False
 
 
 def test_falsa_corre_en_su_propio_hilo():
     hilos: list[str] = []
-    escucha = EscuchaFalsa(["Atenio, para"])
+    escucha = EscuchaFalsa(["Perro, para"])
     escucha.iniciar(lambda _t: hilos.append(threading.current_thread().name))
     escucha.esperar(2)
     assert hilos and hilos[0] != threading.current_thread().name
@@ -76,13 +76,13 @@ def test_un_fallo_del_receptor_no_para_la_escucha():
 def test_microfono_falso_calibra_corta_y_transcribe(microfono_falso):
     # 1 s de silencio para calibrar (20 bloques) y luego dos frases separadas por silencio.
     microfono_falso.bloques = [silencio()] * 20 + ([tono()] * 10 + [silencio()] * 20) * 2
-    transcriptor = TranscriptorFalso(["Atenio, siéntate", "Atenio, camina"])
+    transcriptor = TranscriptorFalso(["Perro, siéntate", "Perro, camina"])
     escucha = EscuchaMicrofono(transcriptor, silencio_s=0.5, prerrollo_s=0)
     oidas: list[str] = []
     escucha.iniciar(oidas.append)
     esperar(lambda: len(oidas) == 2)
     escucha.parar()
-    assert oidas == ["Atenio, siéntate", "Atenio, camina"]
+    assert oidas == ["Perro, siéntate", "Perro, camina"]
     assert escucha.umbral is not None
     assert transcriptor.recibido == [20 * 2 * 800, 20 * 2 * 800]  # 10 de voz + 10 de silencio (0,5 s)
     assert escucha.activa is False and escucha.error is None
@@ -133,7 +133,7 @@ def test_cada_frase_llega_al_interprete(microfono_falso, catalogo, reloj):
     microfono_falso.bloques = [silencio()] * 20 + ([tono()] * 10 + [silencio()] * 20) * 2
     interprete = Interprete(catalogo, reloj=reloj)
     resultados = []
-    escucha = EscuchaMicrofono(TranscriptorFalso(["Atenio, siéntate", "Atenio, para"]), silencio_s=0.5, prerrollo_s=0)
+    escucha = EscuchaMicrofono(TranscriptorFalso(["Perro, siéntate", "Perro, para"]), silencio_s=0.5, prerrollo_s=0)
     escucha.iniciar(lambda texto: resultados.append(interprete.interpretar(texto)))
     esperar(lambda: len(resultados) == 2)
     escucha.parar()
@@ -153,12 +153,12 @@ def test_ajustes_json_tiene_la_seccion_voz_provisional():
 
 
 def test_motor_falso_da_escucha_falsa():
-    escucha = crear_escucha({"motor": "falso", "frases": ["Atenio, sit"]})
+    escucha = crear_escucha({"motor": "falso", "frases": ["Perro, sit"]})
     assert isinstance(escucha, EscuchaFalsa)
     oidas: list[str] = []
     escucha.iniciar(oidas.append)
     escucha.esperar(2)
-    assert oidas == ["Atenio, sit"]
+    assert oidas == ["Perro, sit"]
 
 
 def test_acepta_un_objeto_ajustes(tmp_path):

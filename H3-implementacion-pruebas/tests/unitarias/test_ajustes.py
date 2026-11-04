@@ -51,3 +51,11 @@ def test_ruta_propia(tmp_path):
         encoding="utf-8")
     a = cargar_ajustes(f)
     assert (a.puerto, a.baudios, a.max_ordenes_por_frase, a.provisionales) == ("COM9", 9600, 3, ())
+
+
+def test_palabra_de_activacion_es_un_ajuste():
+    # Mario, 04/11: «Perro» en lugar de «Atenio» (discrepancias.md, Z-01). Sin la clave: «perro».
+    a = cargar_ajustes()
+    assert a.palabra_activacion == "perro"
+    assert "palabra_activacion" in a.provisionales
+    assert a.voz["pista"] == "Perro"
