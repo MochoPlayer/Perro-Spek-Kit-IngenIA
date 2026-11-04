@@ -64,6 +64,9 @@ class GestorAcciones:
 
         self.estado = Estado.LIBRE
         self._cola: deque[Paso] = deque()
+        self._seguimiento: deque[tuple[int, str]] = deque()  # (n.º de orden, id) de cada paso de la cola
+        self._n_orden = 0
+        self.ejecutadas: list[str] = []  # ids de las órdenes cuyo último paso ya se envió, en orden
         self._fin_paso: float | None = None  # hora estimada de fin del paso en curso (None = sin medir)
         self._ultima_orden = reloj.ahora()  # REQ-31: hora de la última orden válida
         self._ultimo_envio: float | None = None
@@ -75,6 +78,19 @@ class GestorAcciones:
     def cola(self) -> tuple[Paso, ...]:
         """Pasos que esperan (sin contar el que está en curso)."""
         return tuple(self._cola)
+
+    @property
+    def cola_ordenes(self) -> tuple[str, ...]:
+        """Ids de las órdenes que aún tienen pasos en la cola, en orden (una vez por orden)."""
+        vistas: list[tuple[int, str]] = []
+        for numero, id_orden in self._seguimiento:
+            if not vistas or vistas[-1][0] != numero:
+                vistas.append((numero, id_orden))
+        return tuple(i for _, i in vistas)
+
+    def _vaciar_cola(self) -> None:
+        self._cola.clear()
+        self._seguimiento.clear()
 
     @property
     def ultimo_envio(self) -> float | None:
@@ -100,11 +116,13 @@ class GestorAcciones:
         for orden in interpretacion.ordenes:
             self.eventos.publicar(TipoEvento.ORDEN_INTERPRETADA, orden.id)
             if orden.interrumpe:  # REQ-07, D-10: «para» no se encola
-                self._para(orden.pasos)
+                self._para(orden.pasos, orden.id)
                 if self.estado is not Estado.LIBRE:
                     return
                 continue
+            self._n_orden += 1
             self._cola.extend(orden.pasos)  # REQ-29, REQ-32: orden dicho / de llegada
+            self._seguimiento.extend((self._n_orden, orden.id) for _ in orden.pasos)
         if self._cola and self.estado in (Estado.LIBRE, Estado.REPOSO):
             self._enviar_siguiente()
 
@@ -120,7 +138,7 @@ class GestorAcciones:
             self.estado = Estado.LIBRE
             self._ultima_orden = self._reloj.ahora()
             return
-        self._cola.clear()
+        self._vaciar_cola()
         self._fin_paso = None
         self.estado = Estado.PARADA
         self._avisar(AVISO_PARADA_ACTIVA)
@@ -159,27 +177,32 @@ class GestorAcciones:
         return self.estado is Estado.OCUPADO and self._fin_paso is None
 
     def _reposo_por_inactividad(self) -> None:
-        self._cola.clear()
+        self._vaciar_cola()
         self._fin_paso = None
         if self._enviar(self._ajustes.comando_reposo):  # sin aviso (REQ-31)
             self.estado = Estado.REPOSO
 
-    def _para(self, pasos: tuple[Paso, ...]) -> None:
+    def _para(self, pasos: tuple[Paso, ...], id_orden: str | None = None) -> None:
         """«Para» (REQ-07, D-10): envía sus comandos del catálogo (`krest`) aunque haya acción en curso."""
         if self._ajustes.para_vacia_cola:  # OPEN-12, opción A
-            self._cola.clear()
+            self._vaciar_cola()
         self._fin_paso = None
         self.estado = Estado.LIBRE
         for paso in pasos:
             if not self._enviar(paso.comando):
                 return
+        if id_orden is not None:
+            self.ejecutadas.append(id_orden)
         if self._cola:  # opción B: la cola sigue tras la parada
             self._enviar_siguiente()
 
     def _enviar_siguiente(self) -> None:
         paso = self._cola.popleft()
+        numero, id_orden = self._seguimiento.popleft()
         if not self._enviar(paso.comando):
             return
+        if not self._seguimiento or self._seguimiento[0][0] != numero:  # era el último paso de su orden
+            self.ejecutadas.append(id_orden)
         self.estado = Estado.OCUPADO
         duracion = paso.duracion_s if paso.duracion_s is not None else self._duracion_desconocida_s
         if duracion is None:
@@ -195,7 +218,7 @@ class GestorAcciones:
             self._ultimo_envio = self._reloj.ahora()
             return True
         self._enlace.desconectar()
-        self._cola.clear()
+        self._vaciar_cola()
         self._fin_paso = None
         if self.estado is not Estado.PARADA:
             self.estado = Estado.LIBRE

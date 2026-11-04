@@ -14,13 +14,13 @@ from typing import Callable
 
 from atenio.ajustes import RUTA_POR_DEFECTO as RUTA_AJUSTES
 from atenio.ajustes import Ajustes, cargar_ajustes
-from atenio.catalogo import Catalogo, cargar_catalogo
+from atenio.catalogo import Catalogo, cargar_catalogo, normalizar
 from atenio.enlace.base import Enlace
 from atenio.enlace.serie import EnlaceSerie
 from atenio.enlace.simulado import EnlaceSimulado
 from atenio.eventos import Evento, Eventos, TipoEvento
 from atenio.gestor_acciones import GestorAcciones
-from atenio.interprete import Interprete
+from atenio.interprete import AVISO_NO_DISPONIBLE, AVISO_NO_ENTENDIDA, Interprete
 from atenio.reloj import Reloj, RelojReal
 
 TIPOS_ENLACE = ("simulado", "serie")
@@ -126,9 +126,24 @@ class Sistema:
         texto = texto.strip()
         if not texto:
             return
+        if self._pulsando():  # pulsar ya es llamar al robot: no hace falta decir la palabra de activación
+            palabra = self.ajustes.palabra_activacion
+            if normalizar(texto.split()[0]) != normalizar(palabra):
+                texto = f"{palabra} {texto}"
         with self.cerrojo:
             self.eventos.publicar(TipoEvento.TEXTO_RECONOCIDO, texto)
             self.gestor.recibir(self.interprete.interpretar(texto))
+
+    def _pulsando(self) -> bool:
+        """True si la escucha está en modo «pulsar» (la voz no necesita la palabra de activación)."""
+        return self.voz_activa and getattr(self.escucha, "modo", None) == "pulsar"
+
+    def hablar(self, activo: bool) -> bool:
+        """Mantener pulsado el micro (True) o soltarlo (False). Devuelve si se está grabando."""
+        pulsar = getattr(self.escucha, "pulsar", None)
+        if pulsar is not None and self.voz_activa:
+            pulsar(activo)
+        return bool(getattr(self.escucha, "hablando", False)) and self.voz_activa
 
     def pulsar_parada(self) -> None:
         """Botón de parada de emergencia (REQ-30)."""
@@ -205,9 +220,10 @@ class Sistema:
         """Niveles (RMS) del micrófono desde el número `desde`, para la onda. Solo números (REQ-24)."""
         medidor = getattr(self.escucha, "nivel", None) if self.voz_activa else None
         if medidor is None:
-            return {"activo": False, "umbral": None, "valores": [], "total": desde}
+            return {"activo": False, "umbral": None, "valores": [], "total": desde, "modo": None, "hablando": False}
         valores, total = medidor.desde(desde)
-        return {"activo": True, "umbral": medidor.umbral, "valores": valores, "total": total}
+        return {"activo": True, "umbral": medidor.umbral, "valores": valores, "total": total,
+                "modo": getattr(self.escucha, "modo", "continuo"), "hablando": bool(getattr(self.escucha, "hablando", False))}
 
     def foto(self, desde: int = 0) -> dict:
         """Estado actual y eventos a partir del número `desde` (para la interfaz)."""
@@ -221,12 +237,35 @@ class Sistema:
                 "error_voz": self._error_voz(),
                 "enlace": self.tipo_enlace,
                 "cola": len(self.gestor.cola),
+                "cola_ordenes": [self._palabra(i) for i in self.gestor.cola_ordenes],
+                "ejecutadas": [{"palabra": self._palabra(i), "comandos": self._comandos(i)}
+                               for i in reversed(self.gestor.ejecutadas[-50:])],
                 "desde": desde,
                 "total_eventos": desde + len(eventos),
-                "eventos": [{"tipo": e.tipo.value, "texto": self._para_pantalla(e), "hora": h, **self._orden(e)}
+                "eventos": [{"tipo": e.tipo.value, "texto": self._para_pantalla(e), "hora": h,
+                             "oculto": self._no_reconocida(e), **self._orden(e)}
                             for e, h in zip(eventos, self._horas[desde:])],
                 "registro": [{"t": round(t - self._inicio, 2), "comando": c} for t, c in self.enlace.registro[-50:]],
             }
+
+    @staticmethod
+    def _no_reconocida(e: Evento) -> bool:
+        """Los avisos de órdenes no reconocidas no se enseñan en la pantalla (petición de Mario, 04/11)."""
+        return e.tipo is TipoEvento.AVISO and (
+            e.texto.startswith(AVISO_NO_ENTENDIDA) or e.texto.startswith(AVISO_NO_DISPONIBLE)
+        )
+
+    def _palabra(self, id_orden: str) -> str:
+        try:
+            return self.catalogo.por_id(id_orden).palabras[0]
+        except (KeyError, IndexError, ValueError):
+            return id_orden
+
+    def _comandos(self, id_orden: str) -> list[str]:
+        try:
+            return [p.comando for p in self.catalogo.por_id(id_orden).pasos]
+        except (KeyError, ValueError):
+            return []
 
     def _error_voz(self) -> str | None:
         error = getattr(self.escucha, "error", None)

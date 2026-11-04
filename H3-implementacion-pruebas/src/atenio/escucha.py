@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib.util
 import logging
 import threading
+from collections import deque
 from pathlib import Path
 from typing import Callable, Iterable, Protocol
 
@@ -26,11 +27,16 @@ registro = logging.getLogger(__name__)
 
 CARPETA_H3 = Path(__file__).resolve().parents[2]
 MOTORES = ("vosk", "whisper-tiny", "whisper-base", "falso")
+MODOS = ("pulsar", "continuo")  # pulsar: se habla mientras se mantiene pulsado el micro (por defecto)
+COLA_PULSAR_BLOQUES = 4  # 0,2 s de audio tras soltar, para no cortar la última sílaba
+MAX_PULSAR_BLOQUES = 600  # 30 s: tope por si se queda pulsado
+MIN_PULSAR_BYTES = 2 * 16_000 // 4  # 0,25 s: menos es un toque, no una frase
 
 # Valores del prototipo I-1 (prototipos/motor-voz/README.md). Provisionales: P-01.
 VOZ_POR_DEFECTO = {
     "motor": "vosk",
     "micro": None,
+    "modo": "pulsar",
     "silencio_s": SILENCIO_FIN_S,
     "prerrollo_s": PRERROLLO_S,
     "calibrar_s": 1.0,
@@ -135,8 +141,13 @@ class EscuchaMicrofono(_Hilo):
         prerrollo_s: float = PRERROLLO_S,
         calibrar_s: float = 1.0,
         captura: CapturaMicrofono | None = None,
+        modo: str = "continuo",
     ):
         super().__init__()
+        if modo not in MODOS:
+            raise ErrorDeVoz(f"Modo de voz «{modo}» desconocido en ajustes.json (voz.modo). Valores válidos: {', '.join(MODOS)}.")
+        self.modo = modo
+        self._pulsado = threading.Event()  # modo «pulsar»: la interfaz lo activa mientras se mantiene pulsado el micro
         self.transcriptor = transcriptor
         self.umbral: float | None = None  # se fija al calibrar
         self.nivel = MedidorNivel()
@@ -147,7 +158,44 @@ class EscuchaMicrofono(_Hilo):
         self._prerrollo_s = prerrollo_s
         self._calibrar_s = calibrar_s
 
+    def pulsar(self, activo: bool) -> None:
+        """Modo «pulsar»: empieza (True) o termina (False) la frase. Sin efecto en modo continuo."""
+        if self.modo == "pulsar":
+            (self._pulsado.set if activo else self._pulsado.clear)()
+
+    @property
+    def hablando(self) -> bool:
+        return self._pulsado.is_set()
+
+    def _bucle_pulsar(self, al_oir: Callable[[str], None]) -> None:
+        """Graba solo mientras está pulsado (más una cola corta). Sin umbral ni cortes por silencio: menos fallos."""
+        self.nivel.umbral = None
+        previos: deque[bytes] = deque(maxlen=max(0, round(self._prerrollo_s / BLOQUE_S)))
+        grabado: list[bytes] = []
+        resto = 0
+        with self._captura as captura:
+            for bloque, _hora in captura.bloques(self._parar):
+                if self._pulsado.is_set():
+                    if not grabado:
+                        grabado = list(previos)
+                    grabado.append(bloque)
+                    resto = COLA_PULSAR_BLOQUES
+                elif grabado:
+                    grabado.append(bloque)
+                    resto -= 1
+                else:
+                    previos.append(bloque)
+                    continue
+                if (resto <= 0 and not self._pulsado.is_set()) or len(grabado) >= MAX_PULSAR_BLOQUES:
+                    audio, grabado = b"".join(grabado), []
+                    if len(audio) >= MIN_PULSAR_BYTES and not self._parar.is_set():
+                        self._entregar(al_oir, self.transcriptor.transcribir(audio))
+                    captura.vaciar()  # lo que llegó mientras se transcribía no cuenta
+                    previos.clear()
+
     def _bucle(self, al_oir: Callable[[str], None]) -> None:
+        if self.modo == "pulsar":
+            return self._bucle_pulsar(al_oir)
         self.nivel.umbral = None  # se vuelve a calibrar en cada encendido
         with self._captura as captura:
             bloques = iter(captura.bloques(self._parar))
@@ -236,6 +284,7 @@ def crear_escucha(ajustes=None) -> Escucha:
     return EscuchaMicrofono(
         crear_transcriptor(voz),
         micro=voz["micro"],
+        modo=voz["modo"],
         silencio_s=float(voz["silencio_s"]),
         prerrollo_s=float(voz["prerrollo_s"]),
         calibrar_s=float(voz["calibrar_s"]),

@@ -83,6 +83,15 @@ def crear_servidor(sistema, puerto: int = 0) -> ThreadingHTTPServer:
                     self._json({"error": "«encender» debe ser true o false"}, 400)
                     return
                 self._json({"ok": True, "micro": sistema.poner_micro(encender)})
+            elif url.path == "/hablar":  # mantener pulsado el micro
+                datos = self._leer_json()
+                if datos is None:
+                    return
+                activo = datos.get("activo")
+                if not isinstance(activo, bool):
+                    self._json({"error": "«activo» debe ser true o false"}, 400)
+                    return
+                self._json({"ok": True, "hablando": sistema.hablar(activo)})
             elif url.path == "/frase":
                 datos = self._leer_json()
                 if datos is None:

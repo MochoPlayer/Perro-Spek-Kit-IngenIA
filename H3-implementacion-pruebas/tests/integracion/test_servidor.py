@@ -190,7 +190,7 @@ def test_nivel_da_los_niveles_nuevos_y_el_umbral(web_micro):
     for v in (100, 120, 900):
         escucha.nivel.anotar(v)
     d = json.loads(pedir(base + "/nivel?desde=0")[2])
-    assert d == {"activo": True, "umbral": 300.0, "valores": [100.0, 120.0, 900.0], "total": 3}
+    assert d == {"activo": True, "umbral": 300.0, "valores": [100.0, 120.0, 900.0], "total": 3, "modo": "continuo", "hablando": False}
     escucha.nivel.anotar(50)
     d = json.loads(pedir(base + "/nivel?desde=3")[2])
     assert d["valores"] == [50.0] and d["total"] == 4

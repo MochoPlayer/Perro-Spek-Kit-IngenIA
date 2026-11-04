@@ -186,7 +186,7 @@ def test_si_falla_el_motor_de_voz_sale_un_aviso_y_sigue_apagado(catalogo):
 def test_nivel_sin_micro_esta_inactivo(catalogo):
     reloj = RelojSimulado()
     sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo)
-    assert sistema.nivel(7) == {"activo": False, "umbral": None, "valores": [], "total": 7}
+    assert sistema.nivel(7) == {"activo": False, "umbral": None, "valores": [], "total": 7, "modo": None, "hablando": False}
 
 
 def test_la_foto_trae_la_orden_con_su_palabra_y_su_comando(catalogo):
@@ -199,3 +199,18 @@ def test_la_foto_trae_la_orden_con_su_palabra_y_su_comando(catalogo):
     assert orden["orden"] == {"palabra": "siéntate", "comandos": ["ksit"]}
     assert foto["enlace"] == "simulado"
     assert foto["error_voz"] is None
+
+
+def test_hablar_sin_micro_no_graba_y_el_modo_desconocido_se_rechaza(catalogo):
+    from atenio.escucha import EscuchaMicrofono, ErrorDeVoz
+
+    reloj = RelojSimulado()
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo)
+    assert sistema.hablar(True) is False
+    with pytest.raises(ErrorDeVoz):
+        EscuchaMicrofono(object(), modo="otro")
+    escucha = EscuchaMicrofono(object(), modo="pulsar")
+    escucha.pulsar(True)
+    assert escucha.hablando
+    escucha.pulsar(False)
+    assert not escucha.hablando

@@ -53,6 +53,9 @@
   #micro.encendido { background: var(--acento); color: var(--acento-texto); }
   #micro.esperando { border-style: dashed; cursor: progress; }
   #nota-micro { text-align: center; color: var(--suave); font-size: 14px; margin: 8px 0 0; min-height: 20px; }
+  #hablar { display: block; margin: 12px auto 0; padding: 12px 20px; font: inherit; font-size: 16px; border-radius: 12px;
+    border: 2px solid var(--acento); background: transparent; color: inherit; cursor: pointer; touch-action: none; user-select: none; }
+  #hablar.grabando { background: var(--acento); color: var(--acento-texto); }
   #nota-micro.mal { color: var(--mal); }
   #onda { display: block; width: 100%; height: 96px; margin-top: 16px; border-radius: 8px; background: var(--fondo); }
 
@@ -91,6 +94,7 @@
   <section class="tarjeta" aria-label="Micrófono">
     <button id="micro" type="button" aria-pressed="false"><span class="icono" aria-hidden="true">🔇</span><span class="palabra">Micro apagado</span></button>
     <p id="nota-micro" role="status">Pulsa para escuchar.</p>
+    <button id="hablar" type="button" hidden>Mantén pulsado para hablar (o la barra espaciadora)</button>
     <canvas id="onda" aria-label="Onda de voz del micrófono"></canvas>
     <p class="rotulo">Lo último que oí</p>
     <div id="ultima"><span class="vacio">Di «Perro» y una orden, por ejemplo «Perro, siéntate».</span></div>
@@ -140,6 +144,24 @@ $("micro").addEventListener("click", async () => {
   }
 });
 
+// ---------------------------------------------------------------- mantener pulsado para hablar (modo «pulsar»)
+let modoPulsar = false, grabando = false;
+function hablar(activo) {
+  if (activo === grabando || (activo && !(microEncendido && !esperandoMicro && modoPulsar))) return;
+  grabando = activo;
+  $("hablar").classList.toggle("grabando", activo);
+  fetch("/hablar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ activo }) }).catch(() => {});
+}
+const bh = $("hablar");
+bh.addEventListener("pointerdown", (ev) => { bh.setPointerCapture(ev.pointerId); hablar(true); });
+bh.addEventListener("pointerup", () => hablar(false));
+bh.addEventListener("pointercancel", () => hablar(false));
+document.addEventListener("keydown", (ev) => {
+  if (ev.code === "Space" && !ev.repeat && document.activeElement.tagName !== "INPUT" && !bh.hidden) { ev.preventDefault(); hablar(true); }
+});
+document.addEventListener("keyup", (ev) => { if (ev.code === "Space") hablar(false); });
+window.addEventListener("blur", () => hablar(false));
+
 // ---------------------------------------------------------------- parada (REQ-30)
 function pintarParada(activa) {
   const b = $("parada");
@@ -180,6 +202,7 @@ function pintar(foto) {
   if (foto.desde !== desde) return;  // respuesta vieja: la siguiente trae todo
   let cambio = false;
   for (const e of foto.eventos) {
+    if (e.oculto) continue;  // avisos de órdenes no reconocidas: no se enseñan
     if (e.tipo === "texto_reconocido") $("ultima").textContent = e.texto;
     else if (e.tipo === "orden_interpretada") {
       const o = e.orden || { palabra: e.texto, comandos: [] };
@@ -253,11 +276,14 @@ async function sondearNivel() {
       if (d.activo) {
         if (d.total < desdeNivel) desdeNivel = 0;  // la escucha se ha vuelto a crear
         umbral = d.umbral;
+        modoPulsar = d.modo === "pulsar";
         for (const v of d.valores) { historia.shift(); historia.push(v); }
         desdeNivel = d.total;
       }
     } catch (e) { /* el sondeo de /estado ya avisa */ }
   } else { historia.fill(0); }
+  bh.hidden = !(microEncendido && !esperandoMicro && modoPulsar);
+  if (bh.hidden && grabando) hablar(false);
   dibujarOnda();
   setTimeout(sondearNivel, 50);
 }
