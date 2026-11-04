@@ -1,0 +1,2 @@
+# Dependencias del prototipo I-1 (motor de voz): las mismas que la escucha del programa.
+-r ../../requirements-voz.txt

@@ -9,5 +9,6 @@
   "baudios": {"valor": 115200, "provisional": true, "fuente": "D-04, CTX-07; discrepancia X-02 (plan.md)"},
   "max_ordenes_por_frase": {"valor": null, "provisional": true, "fuente": "D-06, P-03: por decidir; las pruebas usan 2 y 3 (SC-009)"},
   "para_vacia_cola": {"valor": true, "provisional": true, "fuente": "D-10, OPEN-12 abierto"},
-  "fin_de_linea": {"valor": "\n", "provisional": true, "fuente": "No consta en capacidades-bittle.md; valor habitual del protocolo serie de Petoi. Confirmar en la sesión 2 (I-4)"}
+  "fin_de_linea": {"valor": "\n", "provisional": true, "fuente": "No consta en capacidades-bittle.md; valor habitual del protocolo serie de Petoi. Confirmar en la sesión 2 (I-4)"},
+  "voz": {"valor": {"motor": "vosk", "micro": null, "silencio_s": 0.9, "prerrollo_s": 0.3, "calibrar_s": 1.0, "pista": "Atenio", "carpeta_modelos": "prototipos/motor-voz/modelos", "modelo_vosk": "vosk-model-small-es-0.42"}, "provisional": true, "fuente": "Pendiente P-01 (motor de voz, T047). Valores del prototipo I-1 (prototipos/motor-voz/README.md): 0,9 s de silencio y 0,3 s de prerrollo; pista «Atenio» solo para Whisper. motor: vosk | whisper-tiny | whisper-base | falso. micro: null = el de Windows. carpeta_modelos: relativa a H3-implementacion-pruebas/"}
 }

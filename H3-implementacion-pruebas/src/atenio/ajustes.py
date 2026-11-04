@@ -1,6 +1,7 @@
 # Carga de ajustes.json (plan.md, «Ajustes»). Cubre REQ-31, REQ-35, OPEN-02, OPEN-07, OPEN-11.
+# La sección «voz» (motor, micrófono, cortes de frase; P-01) la usa escucha.py.
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 RUTA_POR_DEFECTO = Path(__file__).resolve().parents[2] / "datos" / "ajustes.json"
@@ -19,6 +20,7 @@ class Ajustes:
     para_vacia_cola: bool
     fin_de_linea: str
     provisionales: tuple[str, ...]  # claves marcadas «provisional»
+    voz: dict = field(default_factory=dict)  # sección «voz» (escucha.py); vacía si falta
 
 
 def cargar_ajustes(ruta: str | Path | None = None) -> Ajustes:
@@ -39,4 +41,5 @@ def cargar_ajustes(ruta: str | Path | None = None) -> Ajustes:
         para_vacia_cola=bool(v("para_vacia_cola")),
         fin_de_linea=v("fin_de_linea"),
         provisionales=tuple(k for k, e in datos.items() if e.get("provisional")),
+        voz=dict(v("voz")) if "voz" in datos else {},
     )
