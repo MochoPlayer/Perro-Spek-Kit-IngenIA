@@ -26,6 +26,9 @@ from atenio.reloj import Reloj, RelojReal
 TIPOS_ENLACE = ("simulado", "serie")
 AVISO_SIN_VOZ = "no hay voz en este programa: usa la caja de texto"  # texto provisional
 PERIODO_TICK_S = 0.05  # cada cuánto avanza el gestor con el reloj real (valor de diseño, no medido)
+# Cómo transcribe Vosk la palabra de activación (prueba del 04/11: «Perro, siéntate» → «pero siéntate»).
+# Solo se usa en modo «pulsar», donde pulsar ya es llamar al robot: en modo continuo «pero» daría falsas activaciones.
+OIDO_COMO_ACTIVACION = {"perro": ("pero", "perro", "perra", "perros")}
 
 
 def tipo_enlace_de_ajustes(ruta: str | Path | None = None) -> str:
@@ -133,6 +136,10 @@ class Sistema:
             return
         if self._pulsando():  # pulsar ya es llamar al robot: no hace falta decir la palabra de activación
             palabra = self.ajustes.palabra_activacion
+            palabras = texto.split()
+            # Vosk (modelo pequeño) oye «perro» como «pero» (prueba del 04/11): si la frase empieza así, se quita.
+            if len(palabras) > 1 and normalizar(palabras[0]) in OIDO_COMO_ACTIVACION.get(normalizar(palabra), ()):
+                texto = " ".join(palabras[1:])
             if normalizar(texto.split()[0]) != normalizar(palabra):
                 texto = f"{palabra} {texto}"
         with self.cerrojo:

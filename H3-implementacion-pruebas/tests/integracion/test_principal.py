@@ -52,6 +52,23 @@ def test_la_voz_llega_igual_que_una_frase_escrita(catalogo):
     assert not escucha.activa
 
 
+@pytest.mark.parametrize("oido, comando", [
+    ("pero siéntate", "ksit"),  # Vosk oye «perro» como «pero» (prueba del 04/11)
+    ("perro siéntate", "ksit"),
+    ("siéntate", "ksit"),
+    ("pero levántate", "kup"),
+])
+def test_modo_pulsar_acepta_la_palabra_de_activacion_mal_oida(catalogo, oido, comando):
+    reloj = RelojSimulado()
+    robot = EnlaceSimulado(reloj)
+    escucha = EscuchaDePrueba()
+    escucha.modo = "pulsar"
+    sistema = Sistema(robot, reloj, catalogo=catalogo, escucha=escucha)
+    sistema.arrancar(con_bucle=False)
+    escucha.decir(oido)
+    assert robot.cadenas == [comando]
+
+
 def test_texto_vacio_no_publica_nada(catalogo):
     reloj = RelojSimulado()
     sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo)
