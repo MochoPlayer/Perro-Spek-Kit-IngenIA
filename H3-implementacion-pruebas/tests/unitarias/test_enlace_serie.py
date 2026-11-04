@@ -83,6 +83,80 @@ def test_descarta_los_bytes_cero_del_bluetooth():
     assert e.leer_lineas() == []
 
 
+class RelojFalso:
+    """Reloj para la espera del arranque: cada «dormir» avanza el tiempo sin esperar de verdad."""
+
+    def __init__(self):
+        self.t = 0.0
+
+    def ahora(self):
+        return self.t
+
+    def dormir(self, s):
+        self.t += s
+
+
+def test_espera_el_ready_del_robot_al_conectar():
+    """Al abrir el puerto el Bittle se reinicia (prueba del 04/11) y escribe «Ready!» al acabar."""
+    reloj = RelojFalso()
+    e = EnlaceSerie("loop://", espera_arranque_s=8, ahora=reloj.ahora, dormir=reloj.dormir)
+    real = e._abrir
+
+    def abrir(*a, **k):
+        ser = real(*a, **k)
+        ser.write(b"* Start *\r\nBittle\r\nN_240517\r\nReady!\r\n")
+        return ser
+
+    e._abrir = abrir
+    assert e.conectar()
+    assert e.arranque[:4] == ["* Start *", "Bittle", "N_240517", "Ready!"]
+    assert reloj.t < 8  # no ha agotado el tope
+    assert e.leer_lineas() == []  # lo del arranque no llega luego al gestor
+
+
+def test_si_el_robot_no_dice_ready_espera_el_tope_y_sigue():
+    reloj = RelojFalso()
+    e = EnlaceSerie("loop://", espera_arranque_s=2, ahora=reloj.ahora, dormir=reloj.dormir)
+    assert e.conectar() and e.conectado
+    assert reloj.t >= 2
+
+
+def test_si_el_puerto_no_responde_se_rinde_al_tope():
+    """Robot apagado: en Windows abrir el COM de Bluetooth no vuelve (04/11). El programa no se cuelga."""
+    import threading
+
+    soltar = threading.Event()
+
+    def abrir_que_no_vuelve(*a, **k):
+        soltar.wait(5)
+        return serial.serial_for_url("loop://", timeout=0)
+
+    e = EnlaceSerie("COM6", abrir=abrir_que_no_vuelve, tope_abrir_s=0.2)
+    assert e.conectar() is False
+    assert not e.conectado
+    assert "no responde" in e.error
+    soltar.set()  # si el puerto se abre tarde, se cierra solo y no se usa
+
+
+def test_con_tope_el_puerto_que_responde_se_usa():
+    e = EnlaceSerie("loop://", tope_abrir_s=2)
+    assert e.conectar() and e.conectado and e.error is None
+
+
+def test_con_tope_un_error_al_abrir_se_informa():
+    def abrir(*a, **k):
+        raise serial.SerialException("Acceso denegado")
+    e = EnlaceSerie("COM6", abrir=abrir, tope_abrir_s=2)
+    assert e.conectar() is False
+    assert "Acceso denegado" in e.error
+
+
+def test_sin_espera_no_lee_nada_al_conectar():
+    e = EnlaceSerie("loop://")
+    assert e.conectar()
+    assert e.arranque == []
+
+
 def test_deteccion_bateria_baja():
     assert es_bateria_baja("Low power: 6.5V")
     assert es_bateria_baja("low power")

@@ -23,6 +23,8 @@ def leer_opciones(argv: list[str] | None = None) -> argparse.Namespace:
                         help="robot simulado (por defecto si ajustes.json no dice otra cosa)")
     enlace.add_argument("--serie", dest="enlace", action="store_const", const="serie",
                         help="robot real por el puerto serie de ajustes.json")
+    p.add_argument("--com", metavar="PUERTO", default=None,
+                   help="puerto del robot real, p. ej. COM6 (implica --serie; manda sobre ajustes.json)")
     p.add_argument("--voz", action="store_true", help="arrancar con el micro encendido (sin --voz arranca apagado; se enciende con el botón)")
     p.add_argument("--puerto", type=int, default=PUERTO_POR_DEFECTO, help=f"puerto web (por defecto {PUERTO_POR_DEFECTO})")
     p.add_argument("--sin-navegador", action="store_true", help="no abrir el navegador al arrancar")
@@ -51,8 +53,11 @@ def fabrica_escucha():
 def main(argv: list[str] | None = None) -> int:
     op = leer_opciones(argv)
     # Con --voz el micro arranca encendido; sin --voz, apagado (se enciende con el botón). Decisión de Mario, 04/11.
+    if op.com and op.enlace == "simulado":
+        print("Error: --com es para el robot real; no se puede usar con --simulado.", file=sys.stderr)
+        return 2
     escucha = crear_escucha_si_hay() if op.voz else None
-    sistema = crear_sistema(op.enlace, escucha=escucha, fabrica_escucha=fabrica_escucha)
+    sistema = crear_sistema(op.enlace, escucha=escucha, fabrica_escucha=fabrica_escucha, puerto_robot=op.com)
     try:
         servidor = crear_servidor(sistema, op.puerto)
     except OSError as e:
@@ -60,8 +65,13 @@ def main(argv: list[str] | None = None) -> int:
               file=sys.stderr)
         return 1
     url = f"http://{HOST}:{servidor.server_address[1]}/"
+    if op.com or (op.enlace or "") == "serie":
+        print("Conectando con el robot (se reinicia al abrir el puerto; unos segundos)…")
     sistema.arrancar()
     conectado = "conectado" if sistema.enlace.conectado else "NO conectado"
+    error = getattr(sistema.enlace.interno, "error", None)
+    if error and not sistema.enlace.conectado:
+        print(f"Aviso: robot no conectado: {error}", file=sys.stderr)
     print(f"En marcha: {url}  (enlace {op.enlace or 'de ajustes.json'}, robot {conectado}, "
           f"voz {'activa' if sistema.voz_activa else 'apagada'}). Ctrl+C para salir.")
     if not op.sin_navegador:

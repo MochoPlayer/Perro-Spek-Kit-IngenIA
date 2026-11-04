@@ -39,6 +39,7 @@
      La orden se muestra con su nombre del catálogo («Perro, sentado» sale como «siéntate»).
    - Escribir `Perro, siéntate` en la caja pequeña y pulsar **Enviar**: sale «siéntate · ksit». `Perro, vuela` → aviso «orden no disponible: «vuela»».
      `hola` o `Atenio, siéntate` (sin «Perro») → no pasa nada (REQ-01).
+   - **Una orden nueva corta la anterior** y se ejecuta en el acto (ajuste `nueva_orden_interrumpe`, Z-02): «Perro, camina» y luego «Perro, siéntate» → el robot deja de andar y se sienta. Las órdenes de una misma frase («siéntate y levántate») van en orden.
    - **■ Parada** (arriba a la derecha): se envía `d`, el botón pasa a «▶ Quitar parada» y sale una banda roja «PARADA ACTIVA»; las órdenes se bloquean. Otro clic desbloquea (REQ-30).
 
 **Opciones de `python -m atenio`**
@@ -47,6 +48,7 @@
 |---|---|
 | `--simulado` | Robot simulado (lo que dice `datos/ajustes.json`, clave `enlace`, si no se pone nada). |
 | `--serie` | Robot real por el puerto serie de `ajustes.json` (`puerto`, `baudios`). Hoy `puerto` es `null` (OPEN-07): la página muestra «Robot no conectado». |
+| `--com COM6` | **Robot real por Bluetooth o USB en ese puerto** (implica `--serie`). El número cambia en cada ordenador: se ve con `python ..\verificacion-robot\sesion_robot.py --listar` (la línea del `Petoi-…`). Al conectar, el robot se reinicia y el programa espera su «Ready!» (hasta 8 s). Si el robot está apagado, a los 15 s sigue con «Robot no conectado». |
 | `--voz` | Arranca con el micro encendido (`atenio.escucha`). Si el motor o el modelo faltan, avisa y sigue con el micro apagado. Sin `--voz` el micro arranca apagado y se enciende con el botón. |
 | `--puerto N` | Puerto de la página (por defecto 8642). Si está ocupado, el programa lo dice y sale. |
 | `--sin-navegador` | No abre el navegador. |

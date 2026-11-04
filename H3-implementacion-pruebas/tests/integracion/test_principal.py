@@ -126,6 +126,21 @@ def test_crear_enlace_simulado_y_serie():
     assert serie.conectado is False  # no se abre nada al crearlo
 
 
+def test_opcion_com_elige_el_robot_real_con_ese_puerto():
+    """--com COM6: el puerto cambia en cada ordenador, así que manda sobre ajustes.json."""
+    sistema = crear_sistema(reloj=RelojSimulado(), puerto_robot="COM6")
+    assert isinstance(sistema.enlace.interno, EnlaceSerie)
+    assert sistema.enlace.interno.puerto == "COM6"
+    assert sistema.enlace.conectado is False  # no se abre hasta arrancar()
+
+
+def test_opciones_de_la_linea_de_ordenes():
+    from atenio.__main__ import leer_opciones, main
+
+    assert leer_opciones(["--com", "COM6"]).com == "COM6"
+    assert main(["--simulado", "--com", "COM6"]) == 2  # incompatibles
+
+
 def test_serie_sin_puerto_arranca_desconectado():
     """ajustes.json tiene `puerto: null` (OPEN-07): el programa arranca y avisa, no se cae."""
     sistema = crear_sistema("serie", reloj=RelojSimulado())

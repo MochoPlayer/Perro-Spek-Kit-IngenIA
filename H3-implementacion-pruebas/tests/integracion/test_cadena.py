@@ -57,9 +57,11 @@ def con_duraciones_de_prueba(catalogo: Catalogo) -> Catalogo:
 class Cadena:
     """Monta los componentes 3, 4 y 5 como lo hará principal.py, con robot y reloj simulados."""
 
-    def __init__(self, catalogo: Catalogo, *, conectado: bool = True) -> None:
+    def __init__(self, catalogo: Catalogo, *, conectado: bool = True, interrumpe: bool | None = None) -> None:
         self.catalogo = catalogo
         self.ajustes = cargar_ajustes()
+        if interrumpe is not None:  # None: lo que diga ajustes.json
+            self.ajustes = dataclasses.replace(self.ajustes, nueva_orden_interrumpe=interrumpe)
         self.reloj = RelojSimulado()
         self.robot = EnlaceSimulado(self.reloj, conectado=conectado)
         self.eventos = Eventos()
@@ -217,8 +219,9 @@ def test_h4_orden_fuera_del_catalogo_se_salta_con_aviso(cadena):
     assert any("bailoteo" in a for a in cadena.avisos)
 
 
-def test_h4_tres_ordenes_con_robot_ocupado_en_orden_de_llegada(cadena):
-    """REQ-32, SC-010, ESC-06."""
+def test_h4_tres_ordenes_con_robot_ocupado_en_orden_de_llegada(catalogo):
+    """REQ-32, SC-010, ESC-06, en modo cola (nueva_orden_interrumpe = false)."""
+    cadena = Cadena(con_duraciones_de_prueba(catalogo), interrumpe=False)
     cadena.decir("Perro, camina")
     cadena.esperar(0.25)
     cadena.decir("Perro, siéntate")
@@ -229,6 +232,36 @@ def test_h4_tres_ordenes_con_robot_ocupado_en_orden_de_llegada(cadena):
     assert cadena.comandos == ["kwkF", "ksit", "kup", "khi"]
     horas = [h for h, _ in cadena.robot.registro]
     assert horas == pytest.approx([0.0, 1.0, 3.0, 4.0])  # ksit dura 2 s (H1 §2.4), el resto valor de prueba
+
+
+def test_h4_orden_nueva_interrumpe_la_anterior_y_se_ejecuta_ya(cadena):
+    """Modo por defecto (nueva_orden_interrumpe = true): la última orden manda, sin esperar."""
+    cadena.decir("Perro, camina")
+    cadena.esperar(0.25)
+    cadena.decir("Perro, siéntate")
+    cadena.decir("Perro, saluda")
+    assert cadena.robot.registro == [(0.0, "kwkF"), (0.25, "ksit"), (0.25, "khi")]
+    assert cadena.gestor.cola == ()
+    cadena.esperar(10.0)
+    assert cadena.comandos == ["kwkF", "ksit", "khi"]
+
+
+def test_h4_interrumpir_con_el_catalogo_real_no_se_atasca(catalogo):
+    """Con las duraciones reales en null, la marcha no termina sola; la orden nueva la corta igualmente."""
+    cadena = Cadena(catalogo)
+    cadena.decir("Perro, camina")
+    cadena.esperar(5.0)
+    cadena.decir("Perro, siéntate")
+    assert cadena.comandos == ["kwkF", "ksit"]
+
+
+def test_h4_ordenes_de_una_misma_frase_siguen_en_orden(cadena):
+    """Interrumpir afecta a lo anterior, no a las órdenes encadenadas de la frase nueva."""
+    cadena.decir("Perro, camina")
+    cadena.decir("Perro, siéntate y levántate")
+    assert cadena.comandos == ["kwkF", "ksit"]
+    cadena.esperar(3.0)
+    assert cadena.comandos == ["kwkF", "ksit", "kup"]
 
 
 # ------------------------------------------------------------------ Historia 5
@@ -244,8 +277,9 @@ def test_h5_para_con_accion_en_curso_envia_krest_y_no_queda_en_cola(cadena):
 
 
 @pytest.mark.discrepancia("OPEN-12")
-def test_h5_para_con_ordenes_en_cola_las_descarta(cadena):
-    """D-10 opción A: «para» vacía la cola."""
+def test_h5_para_con_ordenes_en_cola_las_descarta(catalogo):
+    """D-10 opción A: «para» vacía la cola (modo cola: en el modo por defecto no se acumulan órdenes)."""
+    cadena = Cadena(con_duraciones_de_prueba(catalogo), interrumpe=False)
     cadena.decir("Perro, camina y siéntate")
     cadena.decir("Perro, levántate")
     cadena.decir("Perro, para")

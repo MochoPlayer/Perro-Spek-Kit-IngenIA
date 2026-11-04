@@ -37,12 +37,17 @@ def tipo_enlace_de_ajustes(ruta: str | Path | None = None) -> str:
     return tipo
 
 
-def crear_enlace(tipo: str, ajustes: Ajustes, reloj: Reloj) -> Enlace:
-    """T045, D-03: el mismo programa con el robot simulado o con el puerto serie real."""
+def crear_enlace(tipo: str, ajustes: Ajustes, reloj: Reloj, puerto: str | None = None) -> Enlace:
+    """T045, D-03: el mismo programa con el robot simulado o con el puerto serie real.
+
+    `puerto` (opción --com) manda sobre el de ajustes.json: el número COM cambia en cada ordenador.
+    """
     if tipo == "simulado":
         return EnlaceSimulado(reloj)
     if tipo == "serie":
-        return EnlaceSerie(ajustes.puerto, ajustes.baudios, ajustes.fin_de_linea)
+        return EnlaceSerie(puerto or ajustes.puerto, ajustes.baudios, ajustes.fin_de_linea,
+                           espera_arranque_s=ajustes.espera_arranque_robot_s,
+                           tope_abrir_s=ajustes.tope_abrir_puerto_s)
     raise ValueError(f"enlace desconocido: «{tipo}»")
 
 
@@ -295,11 +300,12 @@ class Sistema:
 
 
 def crear_sistema(
-    tipo_enlace: str | None = None, *, escucha=None, fabrica_escucha=None, reloj: Reloj | None = None
+    tipo_enlace: str | None = None, *, escucha=None, fabrica_escucha=None, reloj: Reloj | None = None,
+    puerto_robot: str | None = None,
 ) -> Sistema:
     """Monta el sistema con el reloj real y el enlace de ajustes.json (o el que se pida)."""
     reloj = reloj if reloj is not None else RelojReal()
     ajustes = cargar_ajustes()
-    tipo = tipo_enlace or tipo_enlace_de_ajustes()
-    return Sistema(crear_enlace(tipo, ajustes, reloj), reloj, ajustes=ajustes, escucha=escucha,
+    tipo = tipo_enlace or ("serie" if puerto_robot else tipo_enlace_de_ajustes())
+    return Sistema(crear_enlace(tipo, ajustes, reloj, puerto_robot), reloj, ajustes=ajustes, escucha=escucha,
                    fabrica_escucha=fabrica_escucha)
