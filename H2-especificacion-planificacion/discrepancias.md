@@ -1,6 +1,6 @@
 # H2 · Discrepancias por resolver
 
-**Estado**: 0 de 14 resueltas · **Fecha**: 2026-10-26 · **Documentos revisados**: `spec.md`, `plan.md` (`7b92170`), `tasks.md` (`c5e518b`) y H1.
+**Estado**: 1 de 14 resueltas (X-08) · **Fecha**: 2026-10-26, actualizado 2026-11-04 · **Documentos revisados**: `spec.md`, `plan.md` (`7b92170`), `tasks.md` (`c5e518b`) y H1.
 
 ## Cómo retomar el trabajo
 
@@ -41,14 +41,14 @@ Hay una copia editable de esta lista en Claude Docs: <https://claude.ai/artifact
 
 | ID | Qué pasa | Opciones | Respuesta del equipo |
 | --- | --- | --- | --- |
-| X-08 | **Falta `constitution.md`.** El flujo del README de H2 la pone antes de `spec.md`. No existe en el repositorio. `plan.md` comprobó las reglas contra `CLAUDE.md`. | 1) Escribirla (reglas fijas del proyecto). 2) Dejar `CLAUDE.md` como constitución y decirlo en el README de H2. | |
 | Y-01 | **D-12 sin pendiente.** D-12 (no enviar los comandos `G` ni `g` del giroscopio) es una propuesta sin confirmar, pero ningún P-NN la recoge. T065 no sale marcada como bloqueada. | Añadir un P-NN para D-12 en `plan.md` y marcar T065 como bloqueada, o confirmar D-12 ahora. | |
 | Y-05 | **Sitio para los prototipos de voz.** `plan.md` no dice dónde se guardan los resultados de I-1 e I-2 (latencia, aciertos con «Atenio», audio en disco). T047 propone `H3-implementacion-pruebas/prototipos/motor-voz.md`. | Aceptar esa ruta y añadirla a la estructura del proyecto en `plan.md`, u otra. | |
 | Y-06 | **Prueba de batería baja.** La spec (Historia 7, REQ-33) la prueba solo con el robot simulado. `plan.md` la pone también en el nivel de robot físico. T078 la incluye como observación, sin criterio de aceptación. | 1) Quitarla del nivel físico en `plan.md`. 2) Añadir a la spec un criterio con el robot real. | |
 
 ## Resueltas
 
-Ninguna todavía. Al resolver una, se mueve aquí con la decisión, la fecha y el commit que la aplicó.
+Al resolver una, se mueve aquí con la decisión, la fecha y el commit que la aplicó.
 
 | ID | Decisión | Fecha | Commit |
 | --- | --- | --- | --- |
+| X-08 | Opción 1: se escribe la constitución con las reglas fijas de `CLAUDE.md`, `README.md` y H1, cada una con su fuente. Está en `.specify/memory/constitution.md` (la lee Spec Kit) y su copia `constitution.md` (esta carpeta). Decisión de Mario. | 2026-11-04 | commit «H2: constitución del proyecto» |

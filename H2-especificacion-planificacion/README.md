@@ -95,7 +95,7 @@ flowchart TB
 ### Pasos
 
 - [ ] Instalar Spec Kit y elegir el agente (se puede adelantar durante el H1)
-- [ ] Constitución: reglas fijas del proyecto que la IA debe respetar → `constitution.md`
+- [x] Constitución: reglas fijas del proyecto que la IA debe respetar → `constitution.md`
 - [ ] Generar la spec a partir del H1 (`/speckit.specify`) → `spec.md`
 - [ ] Clarify (`/speckit.clarify`) y revisión manual: están todos los requisitos del H1, excepcionales incluidos, y no hay supuestos inventados → `spec.md`
 - [ ] **Control:** ¿la spec está completa frente al H1? Si no, se vuelve a la revisión.
