@@ -1,4 +1,4 @@
-"""Fixtures comunes de las pruebas de H3: catálogo, reloj falso y lectura de frases de tests/frases/.
+"""Fixtures comunes de las pruebas de H3: catálogo, reloj simulado y lectura de frases de tests/frases/.
 
 Sin robot, sin micrófono y sin esperas reales (REQ-26, D-08, D-09).
 """
@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from atenio.catalogo import Catalogo, cargar_catalogo
+from atenio.reloj import RelojSimulado
 
 CARPETA_FRASES = Path(__file__).parent / "frases"
 
@@ -19,24 +20,11 @@ def leer_frases(nombre: str) -> list[str]:
     return [l.strip() for l in lineas if l.strip() and not l.lstrip().startswith("#")]
 
 
-class RelojFalso:
-    """Reloj mínimo para las pruebas del intérprete. No sustituye a atenio.reloj.RelojSimulado."""
-
-    def __init__(self, inicio: float = 0.0):
-        self._t = inicio
-
-    def ahora(self) -> float:
-        return self._t
-
-    def avanzar(self, s: float) -> None:
-        self._t += s
-
-
 @pytest.fixture(scope="session")
 def catalogo() -> Catalogo:
     return cargar_catalogo()
 
 
 @pytest.fixture
-def reloj() -> RelojFalso:
-    return RelojFalso()
+def reloj() -> RelojSimulado:
+    return RelojSimulado()
