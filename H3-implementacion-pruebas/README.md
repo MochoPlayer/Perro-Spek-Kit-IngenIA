@@ -8,7 +8,7 @@
 
 ## Cómo instalar y ejecutar
 
-> Parcial (T058): sin voz real (falta P-01) y para un solo portátil (P-07 sin decidir). La interfaz es una página web local (D-07); P-06 sigue pendiente de confirmar por el equipo.
+> Parcial (T058): la voz funciona con el motor provisional de `ajustes.json` (P-01 sigue pendiente) y para un solo portátil (P-07 sin decidir). La interfaz es una página web local (D-07); P-06 sigue pendiente de confirmar por el equipo.
 
 **Requisitos**: Python 3.12 (probado con 3.12.10) en el portátil. No hace falta internet ni el robot.
 
@@ -26,10 +26,20 @@
    python -m atenio --simulado
    ```
    Se abre el navegador en `http://127.0.0.1:8642/`. Para salir: `Ctrl+C` en la terminal.
-4. Probarlo en la página:
-   - Escribir `Atenio, siéntate` en la caja y pulsar **Enviar**: aparece el texto, la orden (`siéntate (REQ-02)`) y el comando `ksit` en «Comandos enviados al robot».
-   - `Atenio, vuela` → aviso «orden no disponible: «vuela»». `hola` (sin «Atenio») → no pasa nada (REQ-01).
-   - Pulsar **PARADA DE EMERGENCIA**: el botón cambia a «PARADA ACTIVA», se envía `d` y las órdenes se bloquean. Otro clic desbloquea (REQ-30).
+   Con voz: `py -3.12 -X utf8 -m atenio --simulado --voz` (sin `-I`: numpy está en el site-packages del usuario). Hace falta
+   `requirements-voz.txt` y el modelo en `prototipos/motor-voz/modelos` (ver `prototipos/motor-voz/README.md`).
+4. Probarlo en la página. La palabra de activación es **«Perro»** (ajuste `palabra_activacion` de `datos/ajustes.json`; Z-01):
+   - **Botón redondo del centro**: enciende y apaga el micro. Encendido: relleno, 🎤 y «Escuchando». Apagado: contorno, 🔇 y «Micro apagado».
+     Con `--voz` el programa arranca con el micro encendido; sin `--voz`, apagado, y el primer clic carga el motor de voz («Encendiendo…», unos segundos).
+   - **Onda de voz** (debajo del botón): el nivel del micrófono, 20 veces por segundo. En silencio queda casi plana; al hablar sube.
+     Al encender, el primer segundo calibra el ruido de la sala (no hables). Después sale la línea discontinua «umbral de voz»:
+     las barras que la pasan se pintan en azul y cuentan como voz. Solo viajan números (RMS), nunca audio (REQ-24).
+   - **Lo último que oí**: la última frase reconocida (de la voz o de la caja).
+   - **Órdenes**: lo más nuevo arriba, «hora · orden · comando» (por ejemplo `12:04:36 camina kwkF`). Los avisos van en la misma lista, en ámbar.
+     La orden se muestra con su nombre del catálogo («Perro, sentado» sale como «siéntate»).
+   - Escribir `Perro, siéntate` en la caja pequeña y pulsar **Enviar**: sale «siéntate · ksit». `Perro, vuela` → aviso «orden no disponible: «vuela»».
+     `hola` o `Atenio, siéntate` (sin «Perro») → no pasa nada (REQ-01).
+   - **■ Parada** (arriba a la derecha): se envía `d`, el botón pasa a «▶ Quitar parada» y sale una banda roja «PARADA ACTIVA»; las órdenes se bloquean. Otro clic desbloquea (REQ-30).
 
 **Opciones de `python -m atenio`**
 
@@ -37,7 +47,7 @@
 |---|---|
 | `--simulado` | Robot simulado (lo que dice `datos/ajustes.json`, clave `enlace`, si no se pone nada). |
 | `--serie` | Robot real por el puerto serie de `ajustes.json` (`puerto`, `baudios`). Hoy `puerto` es `null` (OPEN-07): la página muestra «Robot no conectado». |
-| `--voz` | Escucha el micrófono con `atenio.escucha` (bloque B). Si el módulo no está, avisa y sigue sin voz. |
+| `--voz` | Arranca con el micro encendido (`atenio.escucha`). Si el motor o el modelo faltan, avisa y sigue con el micro apagado. Sin `--voz` el micro arranca apagado y se enciende con el botón. |
 | `--puerto N` | Puerto de la página (por defecto 8642). Si está ocupado, el programa lo dice y sale. |
 | `--sin-navegador` | No abre el navegador. |
 

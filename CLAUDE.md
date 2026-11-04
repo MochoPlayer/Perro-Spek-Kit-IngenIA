@@ -88,7 +88,7 @@ Hechos del cliente que ya están resumidos (no los vuelvas a preguntar):
 
 ### Próximo paso: resolver las discrepancias de H2
 
-`spec.md`, `plan.md` y `tasks.md` están escritos, pero H2 no se entrega hasta resolver las 14 discrepancias de `H2-especificacion-planificacion/discrepancias.md`. **Cuando se retome IngenIA, empieza por ese archivo**: lee su sección «Cómo retomar el trabajo», pregunta al equipo las filas sin respuesta y aplica las respuestas. No decidas por el equipo.
+`spec.md`, `plan.md` y `tasks.md` están escritos, pero H2 no se entrega hasta resolver las 15 discrepancias de `H2-especificacion-planificacion/discrepancias.md`. **Cuando se retome IngenIA, empieza por ese archivo**: lee su sección «Cómo retomar el trabajo», pregunta al equipo las filas sin respuesta y aplica las respuestas. No decidas por el equipo.
 
 ## Convenciones
 
