@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!-- Página de la interfaz (T056, REQ-19, REQ-30, D-07, D-14). Sin recursos externos: funciona sin internet. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atenio · control del Bittle</title>
+<style>
+  :root {
+    --fondo: #f6f7f9; --tarjeta: #ffffff; --borde: #d5dae1; --texto: #13294b; --suave: #5a6778;
+    --acento: #2f6fdb; --acento-texto: #ffffff;
+    --ok: #12795f; --ok-fondo: #e1f3ec; --mal: #b42318; --mal-fondo: #fde7e4;
+    --aviso: #8a5a00; --aviso-fondo: #fdf3d0;
+    --riesgo: #c4221a; --riesgo-texto: #ffffff; --riesgo-activo: #7a1610;
+    --foco: #2f6fdb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #0f1724; --tarjeta: #182234; --borde: #2d3a50; --texto: #e7edf6; --suave: #a3b0c2;
+      --acento: #6c9cf0; --acento-texto: #0f1724;
+      --ok: #5fd0a8; --ok-fondo: #13352b; --mal: #ff8a7a; --mal-fondo: #3d1b18;
+      --aviso: #f3c74f; --aviso-fondo: #3a2f10;
+      --riesgo: #e0362c; --riesgo-texto: #ffffff; --riesgo-activo: #ff8a7a;
+      --foco: #6c9cf0;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.4;
+         background: var(--fondo); color: var(--texto); }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
+         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  h1 { font-size: 24px; margin: 0 16px 0 0; }
+  h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+       color: var(--suave); margin: 0 0 8px; }
+  .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
+  .ancha { grid-column: 1 / -1; }
+  .estado { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px;
+            border-radius: 16px; font-size: 14px; font-weight: 600; border: 1px solid var(--borde); }
+  .estado.ok { background: var(--ok-fondo); color: var(--ok); border-color: var(--ok); }
+  .estado.mal { background: var(--mal-fondo); color: var(--mal); border-color: var(--mal); }
+  .estado.apagado { color: var(--suave); }
+  .grande { font-size: 24px; font-weight: 600; min-height: 32px; word-break: break-word; }
+  .vacio { color: var(--suave); font-weight: 400; font-size: 16px; }
+  form { display: flex; gap: 8px; }
+  input[type=text] { flex: 1; min-width: 0; height: 44px; padding: 0 12px; font-size: 16px; border-radius: 8px;
+                     border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); }
+  button { height: 44px; padding: 0 16px; border-radius: 8px; border: 0; font-size: 16px; font-weight: 600;
+           cursor: pointer; background: var(--acento); color: var(--acento-texto); }
+  button:hover { filter: brightness(1.08); }
+  :focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+  #parada { width: 100%; height: 96px; font-size: 24px; background: var(--riesgo); color: var(--riesgo-texto);
+            border: 4px solid transparent; }
+  #parada.activa { background: var(--tarjeta); color: var(--riesgo-activo); border-color: var(--riesgo-activo); }
+  #tarjeta-parada.activa { background: var(--mal-fondo); border-color: var(--riesgo-activo); }
+  .ayuda { color: var(--suave); font-size: 14px; margin: 8px 0 0; }
+  ul { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; }
+  li { padding: 8px 0; border-bottom: 1px solid var(--borde); font-size: 14px; }
+  li:last-child { border-bottom: 0; }
+  .aviso { background: var(--aviso-fondo); color: var(--aviso); padding: 8px 12px; border-radius: 8px;
+           border-bottom: 0; margin-bottom: 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+  .hora { color: var(--suave); margin-right: 8px; }
+  @media (max-width: 720px) { main { grid-template-columns: minmax(0, 1fr); } #parada { font-size: 20px; } }
+  @media (prefers-reduced-motion: no-preference) { button, .tarjeta { transition: background .15s; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Atenio</h1>
+    <span id="conexion" class="estado apagado" role="status">Conexión: …</span>
+    <span id="gestor" class="estado" role="status">Estado: …</span>
+    <span id="voz" class="estado apagado" role="status">Voz: …</span>
+  </header>
+
+  <section id="tarjeta-parada" class="tarjeta ancha" aria-labelledby="t-parada">
+    <h2 id="t-parada">Parada de emergencia</h2>
+    <button id="parada" type="button" aria-pressed="false">■ PARADA DE EMERGENCIA</button>
+    <p id="parada-ayuda" class="ayuda">Un clic para el robot y bloquea las órdenes. Otro clic lo desbloquea.</p>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-texto">
+    <h2 id="t-texto">Texto reconocido</h2>
+    <div id="texto" class="grande"><span class="vacio">Di «Atenio» y una orden, o escríbela abajo.</span></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-orden">
+    <h2 id="t-orden">Orden interpretada</h2>
+    <div id="orden" class="grande"><span class="vacio">Ninguna todavía.</span></div>
+  </section>
+
+  <section class="tarjeta ancha" aria-labelledby="t-escribir">
+    <h2 id="t-escribir">Escribir una frase (sin micrófono)</h2>
+    <form id="form-frase">
+      <input id="frase" type="text" autocomplete="off" placeholder="Atenio, siéntate" aria-labelledby="t-escribir">
+      <button type="submit">Enviar</button>
+    </form>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-avisos">
+    <h2 id="t-avisos">Avisos</h2>
+    <ul id="avisos"><li class="vacio">Sin avisos.</li></ul>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-registro">
+    <h2 id="t-registro">Comandos enviados al robot</h2>
+    <ul id="registro"><li class="vacio">Aún no se ha enviado ningún comando.</li></ul>
+  </section>
+</main>
+<script>
+"use strict";
+let desde = 0;
+const avisos = [];
+const $ = (id) => document.getElementById(id);
+
+function ponerEstado(el, texto, clase) { el.textContent = texto; el.className = "estado " + clase; }
+
+function lista(el, elementos, vacio, pintar) {
+  el.replaceChildren();
+  if (!elementos.length) { const li = document.createElement("li"); li.className = "vacio"; li.textContent = vacio; el.append(li); return; }
+  for (const e of elementos) el.append(pintar(e));
+}
+
+function pintarParada(activa) {
+  const b = $("parada");
+  b.classList.toggle("activa", activa);
+  $("tarjeta-parada").classList.toggle("activa", activa);
+  b.setAttribute("aria-pressed", String(activa));
+  b.textContent = activa ? "▶ PARADA ACTIVA · pulsa para desbloquear" : "■ PARADA DE EMERGENCIA";
+  $("parada-ayuda").textContent = activa
+    ? "El robot no acepta órdenes hasta que vuelvas a pulsar."
+    : "Un clic para el robot y bloquea las órdenes. Otro clic lo desbloquea.";
+}
+
+function pintar(foto) {
+  if (foto.desde !== desde) return;  // respuesta vieja: la siguiente trae todo
+  for (const e of foto.eventos) {
+    if (e.tipo === "texto_reconocido") { $("texto").textContent = e.texto; $("orden").textContent = "—"; }
+    else if (e.tipo === "orden_interpretada") {
+      const o = $("orden"); o.textContent = (o.textContent === "—" ? "" : o.textContent + " → ") + e.texto;
+    }
+    else if (e.tipo === "aviso") avisos.unshift({ texto: e.texto, hora: e.hora });
+  }
+  desde = foto.total_eventos;
+  avisos.length = Math.min(avisos.length, 30);
+
+  ponerEstado($("conexion"), foto.conectado ? "● Robot conectado" : "✕ Robot no conectado", foto.conectado ? "ok" : "mal");
+  ponerEstado($("gestor"), "Estado: " + foto.estado + (foto.cola ? " (" + foto.cola + " en cola)" : ""), foto.parada ? "mal" : "");
+  ponerEstado($("voz"), foto.voz_activa ? "🎤 Voz activa" : "Voz apagada", foto.voz_activa ? "ok" : "apagado");
+
+  pintarParada(foto.parada);
+
+  lista($("avisos"), avisos, "Sin avisos.", (a) => {
+    const li = document.createElement("li"); li.className = "aviso";
+    const h = document.createElement("span"); h.className = "hora"; h.textContent = a.hora;
+    li.append(h, a.texto); return li;
+  });
+  lista($("registro"), foto.registro.slice().reverse(), "Aún no se ha enviado ningún comando.", (r) => {
+    const li = document.createElement("li");
+    const h = document.createElement("span"); h.className = "hora"; h.textContent = r.t.toFixed(2) + " s";
+    const c = document.createElement("code"); c.textContent = r.comando;
+    li.append(h, c); return li;
+  });
+}
+
+async function sondear() {
+  try {
+    const r = await fetch("/estado?desde=" + desde, { cache: "no-store" });
+    pintar(await r.json());
+  } catch (e) {
+    ponerEstado($("conexion"), "✕ Programa sin respuesta", "mal");
+  }
+  setTimeout(sondear, 300);
+}
+
+$("parada").addEventListener("click", async () => {
+  const r = await fetch("/parada", { method: "POST" });
+  pintarParada((await r.json()).parada);  // el sondeo trae el resto (avisos, estado)
+});
+
+$("form-frase").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const texto = $("frase").value.trim();
+  if (!texto) return;
+  await fetch("/frase", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texto }) });
+  $("frase").value = "";
+});
+
+sondear();
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
   "inactividad_real_s": {"valor": 900, "provisional": false, "fuente": "REQ-31: T = 15 min en uso real"},
   "comando_reposo": {"valor": "krest", "provisional": true, "fuente": "D-11 (plan.md); OPEN-11 abierto"},
   "comando_parada": {"valor": "d", "provisional": true, "fuente": "D-11 (plan.md); OPEN-11 abierto"},
+  "enlace": {"valor": "simulado", "provisional": true, "fuente": "T045, D-03: «simulado» (sin robot, REQ-26) o «serie» (robot real); lo fija el equipo con P-02"},
   "puerto": {"valor": null, "provisional": true, "fuente": "D-04, OPEN-07: sin dato en el repo; lo fija el equipo"},
   "baudios": {"valor": 115200, "provisional": true, "fuente": "D-04, CTX-07; discrepancia X-02 (plan.md)"},
   "max_ordenes_por_frase": {"valor": null, "provisional": true, "fuente": "D-06, P-03: por decidir; las pruebas usan 2 y 3 (SC-009)"},
