@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 from atenio.audio import CapturaMicrofono, DetectorDeFrase
+from atenio.escucha import EscuchaMicrofono
 from atenio.interprete import Interprete
 from atenio.transcripcion import TranscriptorFalso
 from test_audio import microfono_falso, silencio, tono  # noqa: F401 (fixture)
@@ -70,7 +71,28 @@ def test_una_sesion_no_deja_ficheros_de_audio(tmp_path, monkeypatch, microfono_f
 
 def test_el_codigo_de_captura_no_usa_ficheros_de_audio():
     """Inspección automática (complementa la revisión de T042): ni wave, ni soundfile, ni escritura a disco."""
-    for nombre in ("audio.py", "transcripcion.py"):
+    for nombre in ("audio.py", "transcripcion.py", "escucha.py"):
         fuente = (CARPETA_H3 / "src" / "atenio" / nombre).read_text(encoding="utf-8")
         for prohibido in ("import wave", "soundfile", "scipy.io", "write_bytes", ".wav", "tempfile", "open("):
             assert prohibido not in fuente, f"{nombre} contiene «{prohibido}»"
+
+
+def test_la_escucha_continua_no_deja_ficheros(tmp_path, monkeypatch, microfono_falso, escrituras):
+    """La escucha continua (escucha.py, hilo propio) tampoco escribe nada mientras oye tres frases."""
+    import time
+
+    monkeypatch.chdir(tmp_path)
+    antes_h3, antes_tmp = ficheros(CARPETA_H3), ficheros(tmp_path)
+    microfono_falso.bloques = [silencio()] * 20 + ([tono()] * 10 + [silencio()] * 20) * 3
+    oidas: list[str] = []
+    escucha = EscuchaMicrofono(TranscriptorFalso(["uno", "dos", "tres"]), silencio_s=0.5, prerrollo_s=0)
+    escucha.iniciar(oidas.append)
+    fin = time.monotonic() + 2
+    while len(oidas) < 3 and time.monotonic() < fin:
+        time.sleep(0.01)
+    escucha.parar()
+
+    assert oidas == ["uno", "dos", "tres"]
+    assert escrituras == []
+    assert ficheros(tmp_path) == antes_tmp
+    assert ficheros(CARPETA_H3) == antes_h3

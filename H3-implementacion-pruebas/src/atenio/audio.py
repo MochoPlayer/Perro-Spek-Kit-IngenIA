@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 import queue
+import threading
 import time
 from array import array
 from dataclasses import dataclass
@@ -168,9 +169,16 @@ class CapturaMicrofono:
         while not self._cola.empty():
             self._cola.get_nowait()
 
-    def bloques(self) -> Iterable[tuple[bytes, float]]:
-        while True:
-            yield self._cola.get()
+    def bloques(self, parar: threading.Event | None = None) -> Iterable[tuple[bytes, float]]:
+        """Bloques (audio, hora) según llegan. Con `parar`, la serie acaba poco después de activarlo (escucha continua)."""
+        if parar is None:
+            while True:
+                yield self._cola.get()
+        while not parar.is_set():
+            try:
+                yield self._cola.get(timeout=0.1)
+            except queue.Empty:
+                continue
 
     def calibrar(self, segundos: float = 1.0) -> float:
         self.vaciar()

@@ -1,5 +1,2 @@
-# Dependencias solo del prototipo I-1 (motor de voz). El motor final se añade a ../../requirements.txt al cerrar P-01.
-vosk>=0.3.45
-faster-whisper>=1.2
-sounddevice>=0.5
-numpy>=2
+# Dependencias del prototipo I-1 (motor de voz): las mismas que la escucha del programa.
+-r ../../requirements-voz.txt

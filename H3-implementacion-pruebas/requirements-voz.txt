@@ -1,0 +1,8 @@
+# Dependencias de la voz (micrófono y motores). Aparte de requirements.txt: las pruebas básicas no las necesitan.
+# Instalar: py -3.12 -m pip install -r H3-implementacion-pruebas/requirements-voz.txt
+# Los modelos no se suben (prototipos/motor-voz/modelos/, en .gitignore): ver prototipos/motor-voz/README.md.
+# Cuando el equipo cierre P-01 se puede quitar el motor que no se use.
+sounddevice>=0.5
+vosk>=0.3.45
+faster-whisper>=1.2
+numpy>=2
