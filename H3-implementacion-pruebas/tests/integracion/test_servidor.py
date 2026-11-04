@@ -48,14 +48,12 @@ def test_solo_escucha_en_127_0_0_1(web):
         servidor.server_close()
 
 
-def test_la_pagina_tiene_los_elementos_y_no_usa_recursos_externos(web):
+def test_la_pagina_no_usa_recursos_externos(web):
+    """Los elementos de la página simple se comprueban en test_la_pagina_simple_tiene_sus_elementos."""
     base, _, _ = web
     estado, tipo, cuerpo = pedir(base + "/")
     html = cuerpo.decode("utf-8")
     assert estado == 200 and tipo.startswith("text/html")
-    for id_ in ('id="texto"', 'id="orden"', 'id="conexion"', 'id="gestor"', 'id="avisos"',
-                'id="registro"', 'id="parada"', 'id="frase"', 'id="voz"'):
-        assert id_ in html
     assert "http://" not in html and "https://" not in html  # funciona sin internet
 
 
@@ -120,3 +118,87 @@ def test_puerto_ocupado_falla_al_arrancar(web):
     puerto = int(base.rsplit(":", 1)[1])
     with pytest.raises(OSError):
         crear_servidor(sistema, puerto)
+
+
+# ---------------------------------------------------------------- micro y onda (interfaz simple, 04/11)
+
+
+class _EscuchaConNivel:
+    """Escucha de prueba con el medidor de nivel de la escucha real (solo números)."""
+
+    def __init__(self) -> None:
+        from atenio.audio import MedidorNivel
+
+        self.activa = False
+        self.nivel = MedidorNivel()
+
+    def iniciar(self, _al_oir) -> None:
+        self.activa = True
+
+    def parar(self) -> None:
+        self.activa = False
+
+
+@pytest.fixture
+def web_micro(catalogo):
+    reloj = RelojSimulado()
+    escucha = _EscuchaConNivel()
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo, fabrica_escucha=lambda: escucha)
+    sistema.arrancar(con_bucle=False)
+    servidor = crear_servidor(sistema, 0)
+    servir_en_hilo(servidor)
+    yield f"http://127.0.0.1:{servidor.server_address[1]}", sistema, escucha
+    servidor.shutdown()
+    servidor.server_close()
+
+
+def test_la_pagina_simple_tiene_sus_elementos(web):
+    base, _, _ = web
+    html = pedir(base + "/")[2].decode("utf-8")
+    for id_ in ('id="micro"', 'id="onda"', 'id="ultima"', 'id="lista"', 'id="parada"', 'id="aviso-parada"',
+                'id="frase"', 'id="estado-linea"'):
+        assert id_ in html
+    assert "<canvas" in html and "/nivel" in html and "/micro" in html
+    assert "Atenio" not in html  # la palabra de activación es «Perro»
+
+
+def test_el_boton_del_micro_enciende_y_apaga(web_micro):
+    base, sistema, escucha = web_micro
+    assert json.loads(pedir(base + "/estado")[2])["voz_activa"] is False
+    r = json.loads(pedir(base + "/micro", {"encender": True})[2])
+    assert r == {"ok": True, "micro": True} and escucha.activa
+    assert json.loads(pedir(base + "/estado")[2])["voz_activa"] is True
+    r = json.loads(pedir(base + "/micro", {"encender": False})[2])
+    assert r == {"ok": True, "micro": False} and not escucha.activa
+
+
+@pytest.mark.parametrize("cuerpo", [b"no es json", b'{"encender": "si"}', b"[1]"])
+def test_micro_mal_formado_da_400(web_micro, cuerpo):
+    base, _, escucha = web_micro
+    req = urllib.request.Request(base + "/micro", data=cuerpo, method="POST")
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(req, timeout=5)
+    assert e.value.code == 400
+    assert not escucha.activa
+
+
+def test_nivel_da_los_niveles_nuevos_y_el_umbral(web_micro):
+    base, _, escucha = web_micro
+    assert json.loads(pedir(base + "/nivel")[2])["activo"] is False  # micro apagado
+    pedir(base + "/micro", {"encender": True})
+    escucha.nivel.umbral = 300.0
+    for v in (100, 120, 900):
+        escucha.nivel.anotar(v)
+    d = json.loads(pedir(base + "/nivel?desde=0")[2])
+    assert d == {"activo": True, "umbral": 300.0, "valores": [100.0, 120.0, 900.0], "total": 3}
+    escucha.nivel.anotar(50)
+    d = json.loads(pedir(base + "/nivel?desde=3")[2])
+    assert d["valores"] == [50.0] and d["total"] == 4
+
+
+def test_micro_sin_voz_avisa_en_la_lista(web):
+    base, _, _ = web
+    r = json.loads(pedir(base + "/micro", {"encender": True})[2])
+    assert r["micro"] is False
+    foto = json.loads(pedir(base + "/estado")[2])
+    assert "no hay voz en este programa: usa la caja de texto" in [e["texto"] for e in foto["eventos"]]

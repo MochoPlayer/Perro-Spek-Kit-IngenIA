@@ -11,7 +11,15 @@ import threading
 from pathlib import Path
 from typing import Callable, Iterable, Protocol
 
-from atenio.audio import BLOQUE_S, PRERROLLO_S, SILENCIO_FIN_S, CapturaMicrofono, DetectorDeFrase, calibrar_umbral
+from atenio.audio import (
+    BLOQUE_S,
+    PRERROLLO_S,
+    SILENCIO_FIN_S,
+    CapturaMicrofono,
+    DetectorDeFrase,
+    MedidorNivel,
+    calibrar_umbral,
+)
 from atenio.transcripcion import Transcriptor, TranscriptorFalso
 
 registro = logging.getLogger(__name__)
@@ -53,6 +61,7 @@ class _Hilo:
     def __init__(self) -> None:
         self.activa = False
         self.error: BaseException | None = None  # último fallo del hilo (por ejemplo, el micrófono no abre)
+        self.nivel: MedidorNivel | None = None  # niveles del micrófono para la onda; None sin micrófono
         self._parar = threading.Event()
         self._hilo: threading.Thread | None = None
 
@@ -130,16 +139,21 @@ class EscuchaMicrofono(_Hilo):
         super().__init__()
         self.transcriptor = transcriptor
         self.umbral: float | None = None  # se fija al calibrar
+        self.nivel = MedidorNivel()
         self._captura = captura or CapturaMicrofono(micro)
+        if self._captura.medidor is None:
+            self._captura.medidor = self.nivel
         self._silencio_s = silencio_s
         self._prerrollo_s = prerrollo_s
         self._calibrar_s = calibrar_s
 
     def _bucle(self, al_oir: Callable[[str], None]) -> None:
+        self.nivel.umbral = None  # se vuelve a calibrar en cada encendido
         with self._captura as captura:
             bloques = iter(captura.bloques(self._parar))
             n = max(0, round(self._calibrar_s / BLOQUE_S))
             self.umbral = calibrar_umbral(b for b, _hora in _primeros(bloques, n))
+            self.nivel.umbral = self.umbral
             registro.info("Escucha calibrada: umbral de voz (RMS) %.0f", self.umbral)
             detector = DetectorDeFrase(self.umbral, silencio_fin_s=self._silencio_s, prerrollo_s=self._prerrollo_s)
             while not self._parar.is_set():

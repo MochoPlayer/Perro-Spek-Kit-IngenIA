@@ -2,6 +2,7 @@
 
 Cubre REQ-17 y REQ-24: el audio solo vive en memoria (bytes PCM); este módulo nunca escribe en el disco.
 Formato: 16 kHz, mono, 16 bits con signo (el que piden Vosk y Faster-Whisper).
+`MedidorNivel` guarda solo el nivel (RMS) de cada bloque, para dibujar la onda en la interfaz: números, nunca audio.
 """
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ import queue
 import threading
 import time
 from array import array
+from collections import deque
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
@@ -123,14 +125,46 @@ def calibrar_umbral(bloques: Iterable[bytes], factor: float = 3.0) -> float:
     return max(UMBRAL_MINIMO, base * factor)
 
 
+class MedidorNivel:
+    """Los últimos niveles (RMS) del micrófono, para la onda de la interfaz. Solo números en memoria (REQ-24).
+
+    `desde(n)` devuelve los niveles con número de orden mayor o igual que `n` y el total anotado hasta ahora.
+    `umbral` es el umbral de voz calibrado (None mientras se calibra).
+    """
+
+    def __init__(self, maximo: int = 200) -> None:
+        self._valores: deque[float] = deque(maxlen=maximo)
+        self._total = 0
+        self._cerrojo = threading.Lock()
+        self.umbral: float | None = None
+
+    def anotar(self, nivel: float) -> None:
+        with self._cerrojo:
+            self._valores.append(round(float(nivel), 1))
+            self._total += 1
+
+    def desde(self, n: int) -> tuple[list[float], int]:
+        with self._cerrojo:
+            nuevos = max(0, min(self._total - max(0, n), len(self._valores)))
+            valores = list(self._valores)[len(self._valores) - nuevos:] if nuevos else []
+            return valores, self._total
+
+
 class CapturaMicrofono:
     """Lee el micrófono con `sounddevice` y entrega frases en memoria (REQ-17, REQ-24).
 
     `sounddevice` se importa al abrir el micrófono, así las pruebas no lo necesitan.
     """
 
-    def __init__(self, dispositivo: int | str | None = None, *, reloj: Callable[[], float] = time.perf_counter):
+    def __init__(
+        self,
+        dispositivo: int | str | None = None,
+        *,
+        reloj: Callable[[], float] = time.perf_counter,
+        medidor: MedidorNivel | None = None,
+    ):
         self._dispositivo = dispositivo
+        self.medidor = medidor  # si hay, recibe el RMS de cada bloque en cuanto llega (la onda no espera a la transcripción)
         self._reloj = reloj
         self._cola: queue.Queue[tuple[bytes, float]] = queue.Queue()
         self._flujo = None
@@ -139,7 +173,10 @@ class CapturaMicrofono:
         import sounddevice as sd  # dependencia solo del micrófono real
 
         def al_recibir(datos, _frames, _tiempo, _estado):
-            self._cola.put((bytes(datos), self._reloj()))
+            bloque = bytes(datos)
+            self._cola.put((bloque, self._reloj()))
+            if self.medidor is not None:
+                self.medidor.anotar(rms(bloque))
 
         self._flujo = sd.RawInputStream(
             samplerate=FRECUENCIA_HZ,

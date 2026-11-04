@@ -1,167 +1,203 @@
 <!DOCTYPE html>
-<!-- Página de la interfaz (T056, REQ-19, REQ-30, D-07, D-14). Sin recursos externos: funciona sin internet. -->
+<!-- Interfaz simple (T056, REQ-19, REQ-30; versión A elegida por Mario el 04/11): micro en el centro, onda de voz,
+     lo último que oyó, lista de órdenes y parada pequeña. Sin recursos externos: funciona sin internet. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atenio · control del Bittle</title>
+<title>Perro - control del Bittle</title>
 <style>
   :root {
     --fondo: #f6f7f9; --tarjeta: #ffffff; --borde: #d5dae1; --texto: #13294b; --suave: #5a6778;
-    --acento: #2f6fdb; --acento-texto: #ffffff;
-    --ok: #12795f; --ok-fondo: #e1f3ec; --mal: #b42318; --mal-fondo: #fde7e4;
+    --acento: #2f6fdb; --acento-texto: #ffffff; --acento-suave: #dce7fa;
+    --ok: #12795f; --mal: #b42318;
     --aviso: #8a5a00; --aviso-fondo: #fdf3d0;
-    --riesgo: #c4221a; --riesgo-texto: #ffffff; --riesgo-activo: #7a1610;
-    --foco: #2f6fdb;
+    --riesgo: #c4221a; --riesgo-texto: #ffffff; --riesgo-fondo: #fde7e4;
+    --onda-apagada: #c3cad4; --foco: #2f6fdb;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --fondo: #0f1724; --tarjeta: #182234; --borde: #2d3a50; --texto: #e7edf6; --suave: #a3b0c2;
-      --acento: #6c9cf0; --acento-texto: #0f1724;
-      --ok: #5fd0a8; --ok-fondo: #13352b; --mal: #ff8a7a; --mal-fondo: #3d1b18;
+      --acento: #6c9cf0; --acento-texto: #0f1724; --acento-suave: #1f3355;
+      --ok: #5fd0a8; --mal: #ff8a7a;
       --aviso: #f3c74f; --aviso-fondo: #3a2f10;
-      --riesgo: #e0362c; --riesgo-texto: #ffffff; --riesgo-activo: #ff8a7a;
-      --foco: #6c9cf0;
+      --riesgo: #e0362c; --riesgo-texto: #ffffff; --riesgo-fondo: #3d1b18;
+      --onda-apagada: #3a475c; --foco: #6c9cf0;
     }
   }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.4;
          background: var(--fondo); color: var(--texto); }
-  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
-         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  h1 { font-size: 24px; margin: 0 16px 0 0; }
-  h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
-       color: var(--suave); margin: 0 0 8px; }
-  .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
-  .ancha { grid-column: 1 / -1; }
-  .estado { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px;
-            border-radius: 16px; font-size: 14px; font-weight: 600; border: 1px solid var(--borde); }
-  .estado.ok { background: var(--ok-fondo); color: var(--ok); border-color: var(--ok); }
-  .estado.mal { background: var(--mal-fondo); color: var(--mal); border-color: var(--mal); }
-  .estado.apagado { color: var(--suave); }
-  .grande { font-size: 24px; font-weight: 600; min-height: 32px; word-break: break-word; }
-  .vacio { color: var(--suave); font-weight: 400; font-size: 16px; }
-  form { display: flex; gap: 8px; }
-  input[type=text] { flex: 1; min-width: 0; height: 44px; padding: 0 12px; font-size: 16px; border-radius: 8px;
-                     border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); }
-  button { height: 44px; padding: 0 16px; border-radius: 8px; border: 0; font-size: 16px; font-weight: 600;
-           cursor: pointer; background: var(--acento); color: var(--acento-texto); }
-  button:hover { filter: brightness(1.08); }
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  button { font: inherit; cursor: pointer; }
   :focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
-  #parada { width: 100%; height: 96px; font-size: 24px; background: var(--riesgo); color: var(--riesgo-texto);
-            border: 4px solid transparent; }
-  #parada.activa { background: var(--tarjeta); color: var(--riesgo-activo); border-color: var(--riesgo-activo); }
-  #tarjeta-parada.activa { background: var(--mal-fondo); border-color: var(--riesgo-activo); }
-  .ayuda { color: var(--suave); font-size: 14px; margin: 8px 0 0; }
-  ul { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; }
-  li { padding: 8px 0; border-bottom: 1px solid var(--borde); font-size: 14px; }
+  .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
+  .tarjeta + .tarjeta { margin-top: 16px; }
+
+  header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0; }
+  #estado-linea { color: var(--suave); font-size: 14px; flex: 1; min-width: 0;
+                  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #estado-linea.mal { color: var(--mal); }
+  #parada { height: 44px; padding: 0 12px; border-radius: 8px; border: 2px solid var(--riesgo);
+            background: var(--riesgo); color: var(--riesgo-texto); font-weight: 700; font-size: 14px; white-space: nowrap; }
+  #parada:hover { filter: brightness(1.08); }
+  #parada.activa { background: var(--riesgo-fondo); color: var(--riesgo); }
+  #aviso-parada { background: var(--riesgo-fondo); color: var(--riesgo); border: 2px solid var(--riesgo);
+                  border-radius: 8px; padding: 8px 12px; font-weight: 700; margin: 0 0 16px; }
+
+  #micro { display: block; margin: 0 auto; width: 160px; height: 160px; border-radius: 50%;
+           border: 3px solid var(--acento); background: var(--tarjeta); color: var(--acento); font-size: 18px; font-weight: 700; }
+  #micro .icono { display: block; font-size: 40px; line-height: 1; margin-bottom: 4px; }
+  #micro:hover { filter: brightness(1.08); }
+  #micro.encendido { background: var(--acento); color: var(--acento-texto); }
+  #micro.esperando { border-style: dashed; cursor: progress; }
+  #nota-micro { text-align: center; color: var(--suave); font-size: 14px; margin: 8px 0 0; min-height: 20px; }
+  #nota-micro.mal { color: var(--mal); }
+  #onda { display: block; width: 100%; height: 96px; margin-top: 16px; border-radius: 8px; background: var(--fondo); }
+
+  .rotulo { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--suave); margin: 16px 0 4px; }
+  .tarjeta > .rotulo:first-child { margin-top: 0; }
+  #ultima { font-size: 24px; font-weight: 600; min-height: 32px; word-break: break-word; }
+  .vacio { color: var(--suave); font-size: 16px; font-weight: 400; }
+
+  ul { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; }
+  li { padding: 8px 0; border-bottom: 1px solid var(--borde); display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
   li:last-child { border-bottom: 0; }
-  .aviso { background: var(--aviso-fondo); color: var(--aviso); padding: 8px 12px; border-radius: 8px;
-           border-bottom: 0; margin-bottom: 4px; }
-  code { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
-  .hora { color: var(--suave); margin-right: 8px; }
-  @media (max-width: 720px) { main { grid-template-columns: minmax(0, 1fr); } #parada { font-size: 20px; } }
-  @media (prefers-reduced-motion: no-preference) { button, .tarjeta { transition: background .15s; } }
+  li.vacio { border-bottom: 0; }
+  .hora { color: var(--suave); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .dicha { font-weight: 600; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 14px; background: var(--acento-suave); padding: 0 4px; border-radius: 4px; }
+  li.aviso { background: var(--aviso-fondo); color: var(--aviso); border-radius: 8px; padding: 8px 12px; border-bottom: 0; margin: 4px 0; }
+
+  form { display: flex; gap: 8px; margin-top: 16px; }
+  #frase { flex: 1; min-width: 0; height: 44px; padding: 0 12px; font-size: 14px; border-radius: 8px;
+           border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); }
+  form button { height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--borde);
+                background: var(--tarjeta); color: var(--texto); font-size: 14px; }
+  form button:hover { border-color: var(--acento); }
+  @media (prefers-reduced-motion: no-preference) { #micro, #parada { transition: background .15s, color .15s; } }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>Atenio</h1>
-    <span id="conexion" class="estado apagado" role="status">Conexión: …</span>
-    <span id="gestor" class="estado" role="status">Estado: …</span>
-    <span id="voz" class="estado apagado" role="status">Voz: …</span>
+    <h1>Perro</h1>
+    <span id="estado-linea" role="status">Conectando con el programa…</span>
+    <button id="parada" type="button" aria-pressed="false">■ Parada</button>
   </header>
+  <p id="aviso-parada" role="alert" hidden>■ PARADA ACTIVA · el robot no acepta órdenes. Pulsa «Quitar parada».</p>
 
-  <section id="tarjeta-parada" class="tarjeta ancha" aria-labelledby="t-parada">
-    <h2 id="t-parada">Parada de emergencia</h2>
-    <button id="parada" type="button" aria-pressed="false">■ PARADA DE EMERGENCIA</button>
-    <p id="parada-ayuda" class="ayuda">Un clic para el robot y bloquea las órdenes. Otro clic lo desbloquea.</p>
+  <section class="tarjeta" aria-label="Micrófono">
+    <button id="micro" type="button" aria-pressed="false"><span class="icono" aria-hidden="true">🔇</span><span class="palabra">Micro apagado</span></button>
+    <p id="nota-micro" role="status">Pulsa para escuchar.</p>
+    <canvas id="onda" aria-label="Onda de voz del micrófono"></canvas>
+    <p class="rotulo">Lo último que oí</p>
+    <div id="ultima"><span class="vacio">Di «Perro» y una orden, por ejemplo «Perro, siéntate».</span></div>
   </section>
 
-  <section class="tarjeta" aria-labelledby="t-texto">
-    <h2 id="t-texto">Texto reconocido</h2>
-    <div id="texto" class="grande"><span class="vacio">Di «Atenio» y una orden, o escríbela abajo.</span></div>
-  </section>
-
-  <section class="tarjeta" aria-labelledby="t-orden">
-    <h2 id="t-orden">Orden interpretada</h2>
-    <div id="orden" class="grande"><span class="vacio">Ninguna todavía.</span></div>
-  </section>
-
-  <section class="tarjeta ancha" aria-labelledby="t-escribir">
-    <h2 id="t-escribir">Escribir una frase (sin micrófono)</h2>
+  <section class="tarjeta" aria-labelledby="t-lista">
+    <p class="rotulo" id="t-lista">Órdenes</p>
+    <ul id="lista"><li class="vacio">Aún no hay órdenes. Pulsa el micro y di «Perro, siéntate».</li></ul>
     <form id="form-frase">
-      <input id="frase" type="text" autocomplete="off" placeholder="Atenio, siéntate" aria-labelledby="t-escribir">
+      <input id="frase" type="text" autocomplete="off" placeholder="Escribir sin micro: Perro, siéntate" aria-label="Escribir una frase sin micro">
       <button type="submit">Enviar</button>
     </form>
-  </section>
-
-  <section class="tarjeta" aria-labelledby="t-avisos">
-    <h2 id="t-avisos">Avisos</h2>
-    <ul id="avisos"><li class="vacio">Sin avisos.</li></ul>
-  </section>
-
-  <section class="tarjeta" aria-labelledby="t-registro">
-    <h2 id="t-registro">Comandos enviados al robot</h2>
-    <ul id="registro"><li class="vacio">Aún no se ha enviado ningún comando.</li></ul>
   </section>
 </main>
 <script>
 "use strict";
-let desde = 0;
-const avisos = [];
 const $ = (id) => document.getElementById(id);
+const MAX_FILAS = 50;
+let desde = 0, desdeNivel = 0, microEncendido = false, esperandoMicro = false, umbral = null;
+const filas = [];  // lo más nuevo primero: {hora, palabra, comandos} o {hora, aviso}
 
-function ponerEstado(el, texto, clase) { el.textContent = texto; el.className = "estado " + clase; }
-
-function lista(el, elementos, vacio, pintar) {
-  el.replaceChildren();
-  if (!elementos.length) { const li = document.createElement("li"); li.className = "vacio"; li.textContent = vacio; el.append(li); return; }
-  for (const e of elementos) el.append(pintar(e));
+// ---------------------------------------------------------------- botón del micro (S1-S5)
+function pintarMicro(encendido, esperando, nota, mal) {
+  microEncendido = encendido; esperandoMicro = esperando;
+  const b = $("micro");
+  b.classList.toggle("encendido", encendido && !esperando);
+  b.classList.toggle("esperando", esperando);
+  b.setAttribute("aria-pressed", String(encendido));
+  b.setAttribute("aria-busy", String(esperando));
+  b.querySelector(".icono").textContent = esperando ? "⏳" : encendido ? "🎤" : "🔇";
+  b.querySelector(".palabra").textContent = esperando ? (encendido ? "Encendiendo…" : "Apagando…") : encendido ? "Escuchando" : "Micro apagado";
+  const n = $("nota-micro");
+  n.textContent = nota ?? (esperando ? "Cargando el motor de voz…" : encendido ? "Pulsa para apagar." : "Pulsa para escuchar.");
+  n.classList.toggle("mal", !!mal);
 }
 
+$("micro").addEventListener("click", async () => {
+  if (esperandoMicro) return;
+  const encender = !microEncendido;
+  pintarMicro(encender, true);
+  try {
+    const r = await fetch("/micro", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ encender }) });
+    const d = await r.json();
+    pintarMicro(!!d.micro, false, encender && !d.micro ? "No se pudo encender: mira el aviso de la lista." : null, encender && !d.micro);
+  } catch (e) {
+    pintarMicro(!encender, false, "El programa no responde.", true);
+  }
+});
+
+// ---------------------------------------------------------------- parada (REQ-30)
 function pintarParada(activa) {
   const b = $("parada");
   b.classList.toggle("activa", activa);
-  $("tarjeta-parada").classList.toggle("activa", activa);
   b.setAttribute("aria-pressed", String(activa));
-  b.textContent = activa ? "▶ PARADA ACTIVA · pulsa para desbloquear" : "■ PARADA DE EMERGENCIA";
-  $("parada-ayuda").textContent = activa
-    ? "El robot no acepta órdenes hasta que vuelvas a pulsar."
-    : "Un clic para el robot y bloquea las órdenes. Otro clic lo desbloquea.";
+  b.textContent = activa ? "▶ Quitar parada" : "■ Parada";
+  $("aviso-parada").hidden = !activa;
+}
+$("parada").addEventListener("click", async () => {
+  const r = await fetch("/parada", { method: "POST" });
+  pintarParada((await r.json()).parada);
+});
+
+// ---------------------------------------------------------------- lista de órdenes y avisos
+function pintarLista() {
+  const ul = $("lista");
+  ul.replaceChildren();
+  if (!filas.length) {
+    const li = document.createElement("li"); li.className = "vacio";
+    li.textContent = "Aún no hay órdenes. Pulsa el micro y di «Perro, siéntate».";
+    ul.append(li); return;
+  }
+  for (const f of filas) {
+    const li = document.createElement("li");
+    const h = document.createElement("span"); h.className = "hora"; h.textContent = f.hora; li.append(h);
+    if (f.aviso !== undefined) {
+      li.className = "aviso";
+      const t = document.createElement("span"); t.textContent = "⚠ " + f.aviso; li.append(t);
+    } else {
+      const p = document.createElement("span"); p.className = "dicha"; p.textContent = f.palabra; li.append(p);
+      for (const c of f.comandos) { const k = document.createElement("code"); k.textContent = c; li.append(k); }
+    }
+    ul.append(li);
+  }
 }
 
 function pintar(foto) {
   if (foto.desde !== desde) return;  // respuesta vieja: la siguiente trae todo
+  let cambio = false;
   for (const e of foto.eventos) {
-    if (e.tipo === "texto_reconocido") { $("texto").textContent = e.texto; $("orden").textContent = "—"; }
+    if (e.tipo === "texto_reconocido") $("ultima").textContent = e.texto;
     else if (e.tipo === "orden_interpretada") {
-      const o = $("orden"); o.textContent = (o.textContent === "—" ? "" : o.textContent + " → ") + e.texto;
-    }
-    else if (e.tipo === "aviso") avisos.unshift({ texto: e.texto, hora: e.hora });
+      const o = e.orden || { palabra: e.texto, comandos: [] };
+      filas.unshift({ hora: e.hora, palabra: o.palabra, comandos: o.comandos }); cambio = true;
+    } else if (e.tipo === "aviso") { filas.unshift({ hora: e.hora, aviso: e.texto }); cambio = true; }
   }
   desde = foto.total_eventos;
-  avisos.length = Math.min(avisos.length, 30);
+  filas.length = Math.min(filas.length, MAX_FILAS);
+  if (cambio || !$("lista").children.length) pintarLista();
 
-  ponerEstado($("conexion"), foto.conectado ? "● Robot conectado" : "✕ Robot no conectado", foto.conectado ? "ok" : "mal");
-  ponerEstado($("gestor"), "Estado: " + foto.estado + (foto.cola ? " (" + foto.cola + " en cola)" : ""), foto.parada ? "mal" : "");
-  ponerEstado($("voz"), foto.voz_activa ? "🎤 Voz activa" : "Voz apagada", foto.voz_activa ? "ok" : "apagado");
-
+  const linea = $("estado-linea");
+  linea.textContent = (foto.conectado ? "● Robot conectado" : "✕ Robot no conectado") + " · " + foto.enlace
+    + (foto.cola ? " · " + foto.cola + " en cola" : "");
+  linea.classList.toggle("mal", !foto.conectado);
   pintarParada(foto.parada);
-
-  lista($("avisos"), avisos, "Sin avisos.", (a) => {
-    const li = document.createElement("li"); li.className = "aviso";
-    const h = document.createElement("span"); h.className = "hora"; h.textContent = a.hora;
-    li.append(h, a.texto); return li;
-  });
-  lista($("registro"), foto.registro.slice().reverse(), "Aún no se ha enviado ningún comando.", (r) => {
-    const li = document.createElement("li");
-    const h = document.createElement("span"); h.className = "hora"; h.textContent = r.t.toFixed(2) + " s";
-    const c = document.createElement("code"); c.textContent = r.comando;
-    li.append(h, c); return li;
-  });
+  if (!esperandoMicro && foto.voz_activa !== microEncendido) {
+    pintarMicro(foto.voz_activa, false, foto.error_voz ? "El micro se ha parado: " + foto.error_voz : null, !!foto.error_voz);
+  }
 }
 
 async function sondear() {
@@ -169,15 +205,10 @@ async function sondear() {
     const r = await fetch("/estado?desde=" + desde, { cache: "no-store" });
     pintar(await r.json());
   } catch (e) {
-    ponerEstado($("conexion"), "✕ Programa sin respuesta", "mal");
+    $("estado-linea").textContent = "✕ El programa no responde"; $("estado-linea").classList.add("mal");
   }
   setTimeout(sondear, 300);
 }
-
-$("parada").addEventListener("click", async () => {
-  const r = await fetch("/parada", { method: "POST" });
-  pintarParada((await r.json()).parada);  // el sondeo trae el resto (avisos, estado)
-});
 
 $("form-frase").addEventListener("submit", async (ev) => {
   ev.preventDefault();
@@ -187,7 +218,53 @@ $("form-frase").addEventListener("submit", async (ev) => {
   $("frase").value = "";
 });
 
+// ---------------------------------------------------------------- onda de voz (20 veces por segundo)
+const N = 80;  // 4 s de historia, un valor cada 50 ms
+const historia = new Array(N).fill(0);
+const color = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function dibujarOnda() {
+  const cv = $("onda"), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  const medio = h / 2, paso = w / N;
+  const maximo = Math.max(2000, (umbral || 0) * 4);  // RMS que llena la altura
+  const escala = (v) => Math.min(1, v / maximo) * (medio - 4);
+  const encendido = microEncendido && !esperandoMicro;
+  for (let i = 0; i < N; i++) {
+    const v = encendido ? historia[i] : 0, alto = Math.max(1, escala(v));
+    c.fillStyle = !encendido ? color("--onda-apagada") : umbral !== null && v >= umbral ? color("--acento") : color("--suave");
+    c.fillRect(i * paso + 1, medio - alto, Math.max(1, paso - 2), alto * 2);
+  }
+  c.font = "12px system-ui";
+  if (!encendido) return;
+  if (umbral === null) { c.fillStyle = color("--suave"); c.fillText("calibrando el ruido de la sala… (no hables)", 4, 16); return; }
+  const u = escala(umbral);
+  c.strokeStyle = color("--aviso"); c.setLineDash([6, 4]); c.lineWidth = 1;
+  c.beginPath(); c.moveTo(0, medio - u); c.lineTo(w, medio - u); c.moveTo(0, medio + u); c.lineTo(w, medio + u); c.stroke();
+  c.setLineDash([]); c.fillStyle = color("--aviso"); c.fillText("umbral de voz", 4, Math.max(12, medio - u - 4));
+}
+
+async function sondearNivel() {
+  if (microEncendido && !esperandoMicro) {
+    try {
+      const r = await fetch("/nivel?desde=" + desdeNivel, { cache: "no-store" });
+      const d = await r.json();
+      if (d.activo) {
+        if (d.total < desdeNivel) desdeNivel = 0;  // la escucha se ha vuelto a crear
+        umbral = d.umbral;
+        for (const v of d.valores) { historia.shift(); historia.push(v); }
+        desdeNivel = d.total;
+      }
+    } catch (e) { /* el sondeo de /estado ya avisa */ }
+  } else { historia.fill(0); }
+  dibujarOnda();
+  setTimeout(sondearNivel, 50);
+}
+
+pintarMicro(false, false);
 sondear();
+sondearNivel();
 </script>
 </body>
 </html>

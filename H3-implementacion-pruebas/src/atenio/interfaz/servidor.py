@@ -1,7 +1,8 @@
 """Servidor de la página web local (componente 6 de plan.md, D-07). Cubre T056: REQ-19 y REQ-30.
 
 Solo biblioteca estándar y solo en 127.0.0.1. La página pregunta el estado cada poco (sondeo):
-GET / (página), GET /estado?desde=N (JSON), POST /frase {"texto": ...}, POST /parada.
+GET / (página), GET /estado?desde=N (JSON), GET /nivel?desde=N (onda del micro, solo números),
+POST /frase {"texto": ...}, POST /parada, POST /micro {"encender": true|false}.
 """
 from __future__ import annotations
 
@@ -36,16 +37,35 @@ def crear_servidor(sistema, puerto: int = 0) -> ThreadingHTTPServer:
             self._responder(codigo, json.dumps(datos, ensure_ascii=False).encode("utf-8"),
                             "application/json; charset=utf-8")
 
+        def _desde(self, url) -> int:
+            try:
+                return max(0, int(parse_qs(url.query).get("desde", ["0"])[0]))
+            except ValueError:
+                return 0
+
+        def _leer_json(self):
+            """El cuerpo JSON como dict, o None si ya se respondió con un error."""
+            largo = int(self.headers.get("Content-Length") or 0)
+            if largo > MAX_CUERPO:
+                self._json({"error": "cuerpo demasiado largo"}, 413)
+                return None
+            try:
+                datos = json.loads(self.rfile.read(largo).decode("utf-8") or "{}")
+            except ValueError:
+                datos = None
+            if not isinstance(datos, dict):
+                self._json({"error": "JSON no válido"}, 400)
+                return None
+            return datos
+
         def do_GET(self) -> None:
             url = urlparse(self.path)
             if url.path in ("/", "/index.html"):
                 self._responder(200, PAGINA.read_bytes(), "text/html; charset=utf-8")
             elif url.path == "/estado":
-                try:
-                    desde = max(0, int(parse_qs(url.query).get("desde", ["0"])[0]))
-                except ValueError:
-                    desde = 0
-                self._json(sistema.foto(desde))
+                self._json(sistema.foto(self._desde(url)))
+            elif url.path == "/nivel":
+                self._json(sistema.nivel(self._desde(url)))
             else:
                 self._json({"error": "no existe"}, 404)
 
@@ -54,16 +74,20 @@ def crear_servidor(sistema, puerto: int = 0) -> ThreadingHTTPServer:
             if url.path == "/parada":  # REQ-30
                 sistema.pulsar_parada()
                 self._json({"ok": True, "parada": sistema.foto(0)["parada"]})
+            elif url.path == "/micro":
+                datos = self._leer_json()
+                if datos is None:
+                    return
+                encender = datos.get("encender")
+                if not isinstance(encender, bool):
+                    self._json({"error": "«encender» debe ser true o false"}, 400)
+                    return
+                self._json({"ok": True, "micro": sistema.poner_micro(encender)})
             elif url.path == "/frase":
-                largo = int(self.headers.get("Content-Length") or 0)
-                if largo > MAX_CUERPO:
-                    self._json({"error": "frase demasiado larga"}, 413)
+                datos = self._leer_json()
+                if datos is None:
                     return
-                try:
-                    texto = json.loads(self.rfile.read(largo).decode("utf-8") or "{}").get("texto", "")
-                except (ValueError, AttributeError):
-                    self._json({"error": "JSON no válido"}, 400)
-                    return
+                texto = datos.get("texto", "")
                 if not isinstance(texto, str):
                     self._json({"error": "«texto» debe ser texto"}, 400)
                     return

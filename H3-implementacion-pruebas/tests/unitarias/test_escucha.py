@@ -195,3 +195,23 @@ def test_falta_la_biblioteca_dice_que_instalar(monkeypatch):
     monkeypatch.setattr(e.importlib.util, "find_spec", lambda _m: None)
     with pytest.raises(ErrorDeVoz, match="requirements-voz.txt"):
         crear_escucha({"motor": "vosk"})
+
+
+def test_la_escucha_real_expone_el_nivel_y_el_umbral(microfono_falso):
+    """La onda de la interfaz: niveles (números) de cada bloque y el umbral calibrado. Nada de audio."""
+    microfono_falso.bloques = [silencio()] * 20 + [tono()] * 10 + [silencio()] * 20
+    oidas: list[str] = []
+    escucha = EscuchaMicrofono(TranscriptorFalso(["Perro, siéntate"]), silencio_s=0.5, prerrollo_s=0)
+    assert escucha.nivel is not None and escucha.nivel.umbral is None
+    escucha.iniciar(oidas.append)
+    esperar(lambda: oidas == ["Perro, siéntate"])
+    escucha.parar()
+    valores, total = escucha.nivel.desde(0)
+    assert total == 50 and len(valores) == 50
+    assert all(isinstance(v, float) for v in valores)
+    assert escucha.nivel.umbral == escucha.umbral
+    assert max(valores) > escucha.umbral > valores[0]  # la voz pasa el umbral; el silencio, no
+
+
+def test_la_escucha_falsa_no_tiene_nivel():
+    assert EscuchaFalsa(["Perro, siéntate"]).nivel is None

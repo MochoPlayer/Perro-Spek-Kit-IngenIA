@@ -2,6 +2,7 @@
 
 Cubre T019, T045 y parte de T057 (REQ-19, REQ-26, REQ-27). La voz es opcional: `escucha` sigue el contrato de
 `atenio.escucha` (iniciar(al_oir), parar(), activa) por tipado de pato. Sin voz, las frases llegan por `oir()`.
+El botón del micro de la interfaz usa `poner_micro()`; si aún no hay escucha, la crea con `fabrica_escucha`.
 """
 from __future__ import annotations
 
@@ -23,6 +24,7 @@ from atenio.interprete import Interprete
 from atenio.reloj import Reloj, RelojReal
 
 TIPOS_ENLACE = ("simulado", "serie")
+AVISO_SIN_VOZ = "no hay voz en este programa: usa la caja de texto"  # texto provisional
 PERIODO_TICK_S = 0.05  # cada cuánto avanza el gestor con el reloj real (valor de diseño, no medido)
 
 
@@ -83,6 +85,7 @@ class Sistema:
         catalogo: Catalogo | None = None,
         ajustes: Ajustes | None = None,
         escucha=None,
+        fabrica_escucha: Callable[[], object] | None = None,
         inactividad_s: float | None = None,
         duracion_desconocida_s: float | None = None,
     ) -> None:
@@ -110,6 +113,8 @@ class Sistema:
             duracion_desconocida_s=duracion_desconocida_s,
         )
         self.escucha = escucha
+        self._fabrica_escucha = fabrica_escucha  # crea la escucha al primer «encender» (programa sin --voz)
+        self._cerrojo_micro = threading.Lock()  # encender y apagar no se pisan (cargar el modelo tarda)
         self.cerrojo = threading.RLock()
         self._parar = threading.Event()
         self._hilo: threading.Thread | None = None
@@ -129,6 +134,30 @@ class Sistema:
         """Botón de parada de emergencia (REQ-30)."""
         with self.cerrojo:
             self.gestor.pulsar_parada()
+
+    def poner_micro(self, encender: bool) -> bool:
+        """Botón del micro: enciende o apaga la escucha. Devuelve si queda escuchando. Un fallo sale como aviso."""
+        with self._cerrojo_micro:
+            if not encender:
+                if self.escucha is not None:
+                    self.escucha.parar()
+                return self.voz_activa
+            if self.escucha is None:
+                if self._fabrica_escucha is None:
+                    self._avisar(AVISO_SIN_VOZ)
+                    return False
+                try:
+                    self.escucha = self._fabrica_escucha()
+                except Exception as e:  # motor no instalado, falta el modelo...
+                    self._avisar(f"no se pudo encender el micro: {e}")
+                    return False
+            if not self.voz_activa:
+                self.escucha.iniciar(self.oir)
+            return self.voz_activa
+
+    def _avisar(self, texto: str) -> None:
+        with self.cerrojo:
+            self.eventos.publicar(TipoEvento.AVISO, texto)
 
     def tick(self) -> None:
         with self.cerrojo:
@@ -167,6 +196,19 @@ class Sistema:
     def voz_activa(self) -> bool:
         return bool(self.escucha is not None and getattr(self.escucha, "activa", False))
 
+    @property
+    def tipo_enlace(self) -> str:
+        """«simulado», «serie» u otro: el nombre de la clase del enlace sin «Enlace»."""
+        return type(self.enlace.interno).__name__.removeprefix("Enlace").lower() or "desconocido"
+
+    def nivel(self, desde: int = 0) -> dict:
+        """Niveles (RMS) del micrófono desde el número `desde`, para la onda. Solo números (REQ-24)."""
+        medidor = getattr(self.escucha, "nivel", None) if self.voz_activa else None
+        if medidor is None:
+            return {"activo": False, "umbral": None, "valores": [], "total": desde}
+        valores, total = medidor.desde(desde)
+        return {"activo": True, "umbral": medidor.umbral, "valores": valores, "total": total}
+
     def foto(self, desde: int = 0) -> dict:
         """Estado actual y eventos a partir del número `desde` (para la interfaz)."""
         with self.cerrojo:
@@ -176,13 +218,29 @@ class Sistema:
                 "conectado": self.enlace.conectado,
                 "parada": self.gestor.estado.value == "Parada",
                 "voz_activa": self.voz_activa,
+                "error_voz": self._error_voz(),
+                "enlace": self.tipo_enlace,
                 "cola": len(self.gestor.cola),
                 "desde": desde,
                 "total_eventos": desde + len(eventos),
-                "eventos": [{"tipo": e.tipo.value, "texto": self._para_pantalla(e), "hora": h}
+                "eventos": [{"tipo": e.tipo.value, "texto": self._para_pantalla(e), "hora": h, **self._orden(e)}
                             for e, h in zip(eventos, self._horas[desde:])],
                 "registro": [{"t": round(t - self._inicio, 2), "comando": c} for t, c in self.enlace.registro[-50:]],
             }
+
+    def _error_voz(self) -> str | None:
+        error = getattr(self.escucha, "error", None)
+        return str(error) if error is not None and not self.voz_activa else None
+
+    def _orden(self, e: Evento) -> dict:
+        """Para la lista de la interfaz: la orden interpretada con su palabra del catálogo y sus comandos."""
+        if e.tipo is not TipoEvento.ORDEN_INTERPRETADA:
+            return {}
+        try:
+            orden = self.catalogo.por_id(e.texto)
+        except (KeyError, ValueError):
+            return {}
+        return {"orden": {"palabra": orden.palabras[0], "comandos": [p.comando for p in orden.pasos]}}
 
     def _para_pantalla(self, e: Evento) -> str:
         """La orden interpretada se publica con su REQ («REQ-04»); en pantalla va también su palabra."""
@@ -197,9 +255,12 @@ class Sistema:
         self.eventos.suscribir(funcion)
 
 
-def crear_sistema(tipo_enlace: str | None = None, *, escucha=None, reloj: Reloj | None = None) -> Sistema:
+def crear_sistema(
+    tipo_enlace: str | None = None, *, escucha=None, fabrica_escucha=None, reloj: Reloj | None = None
+) -> Sistema:
     """Monta el sistema con el reloj real y el enlace de ajustes.json (o el que se pida)."""
     reloj = reloj if reloj is not None else RelojReal()
     ajustes = cargar_ajustes()
     tipo = tipo_enlace or tipo_enlace_de_ajustes()
-    return Sistema(crear_enlace(tipo, ajustes, reloj), reloj, ajustes=ajustes, escucha=escucha)
+    return Sistema(crear_enlace(tipo, ajustes, reloj), reloj, ajustes=ajustes, escucha=escucha,
+                   fabrica_escucha=fabrica_escucha)

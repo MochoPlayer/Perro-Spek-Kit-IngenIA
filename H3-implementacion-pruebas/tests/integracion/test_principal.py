@@ -133,3 +133,69 @@ def test_serie_sin_puerto_arranca_desconectado():
     assert sistema.eventos.textos(TipoEvento.ESTADO_CONEXION) == ["desconectado"]
     sistema.oir("Perro, siéntate")
     assert "robot no conectado" in sistema.eventos.avisos
+
+
+# ---------------------------------------------------------------- botón del micro (poner_micro)
+
+
+def test_sin_voz_arranca_apagado_y_el_boton_crea_la_escucha(catalogo):
+    reloj = RelojSimulado()
+    creadas: list[EscuchaDePrueba] = []
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo,
+                      fabrica_escucha=lambda: creadas.append(EscuchaDePrueba()) or creadas[-1])
+    sistema.arrancar(con_bucle=False)
+    assert not sistema.voz_activa and creadas == []  # sin --voz: micro apagado
+    assert sistema.poner_micro(True) is True
+    assert len(creadas) == 1 and sistema.voz_activa
+    creadas[0].decir("Perro, siéntate")
+    assert sistema.eventos.textos(TipoEvento.TEXTO_RECONOCIDO) == ["Perro, siéntate"]
+    assert sistema.poner_micro(False) is False and not creadas[0].activa
+    assert sistema.poner_micro(True) is True
+    assert len(creadas) == 1  # se reutiliza la misma escucha
+
+
+def test_con_voz_arranca_encendido_y_se_apaga_con_el_boton(catalogo):
+    reloj = RelojSimulado()
+    escucha = EscuchaDePrueba()
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo, escucha=escucha)
+    sistema.arrancar(con_bucle=False)
+    assert sistema.voz_activa
+    assert sistema.poner_micro(False) is False
+    assert not escucha.activa
+
+
+def test_encender_sin_voz_posible_da_un_aviso(catalogo):
+    reloj = RelojSimulado()
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo)
+    assert sistema.poner_micro(True) is False
+    assert sistema.eventos.avisos == ["no hay voz en este programa: usa la caja de texto"]
+
+
+def test_si_falla_el_motor_de_voz_sale_un_aviso_y_sigue_apagado(catalogo):
+    reloj = RelojSimulado()
+
+    def falla():
+        raise RuntimeError("Falta la biblioteca «vosk»")
+
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo, fabrica_escucha=falla)
+    assert sistema.poner_micro(True) is False
+    assert sistema.eventos.avisos == ["no se pudo encender el micro: Falta la biblioteca «vosk»"]
+    assert not sistema.voz_activa
+
+
+def test_nivel_sin_micro_esta_inactivo(catalogo):
+    reloj = RelojSimulado()
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo)
+    assert sistema.nivel(7) == {"activo": False, "umbral": None, "valores": [], "total": 7}
+
+
+def test_la_foto_trae_la_orden_con_su_palabra_y_su_comando(catalogo):
+    reloj = RelojSimulado()
+    sistema = Sistema(EnlaceSimulado(reloj), reloj, catalogo=catalogo)
+    sistema.arrancar(con_bucle=False)
+    sistema.oir("Perro, sentado")
+    foto = sistema.foto()
+    orden = [e for e in foto["eventos"] if e["tipo"] == "orden_interpretada"][0]
+    assert orden["orden"] == {"palabra": "siéntate", "comandos": ["ksit"]}
+    assert foto["enlace"] == "simulado"
+    assert foto["error_voz"] is None

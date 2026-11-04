@@ -17,6 +17,7 @@ from atenio.audio import (
     UMBRAL_MINIMO,
     CapturaMicrofono,
     DetectorDeFrase,
+    MedidorNivel,
     calibrar_umbral,
     rms,
 )
@@ -138,3 +139,30 @@ def test_captura_con_microfono_falso(microfono_falso):
     assert frase is not None
     assert len(frase.audio) == 20 * 2 * MUESTRAS_POR_BLOQUE
     assert isinstance(frase.audio, bytes)
+
+
+# --- nivel del micrófono para la onda de la interfaz (solo números, REQ-24) -----------------------
+
+
+def test_medidor_devuelve_solo_lo_nuevo_y_guarda_un_maximo():
+    m = MedidorNivel(maximo=3)
+    assert m.desde(0) == ([], 0)
+    for v in (10, 20, 30, 40):
+        m.anotar(v)
+    assert m.desde(0) == ([20.0, 30.0, 40.0], 4)  # solo quedan los 3 últimos
+    assert m.desde(3) == ([40.0], 4)
+    assert m.desde(4) == ([], 4)
+    assert m.desde(99) == ([], 4)
+    assert all(isinstance(v, float) for v in m.desde(0)[0])
+
+
+def test_la_captura_anota_el_nivel_de_cada_bloque(microfono_falso):
+    microfono_falso.bloques = [silencio()] * 3 + [tono(1000)] * 2
+    medidor = MedidorNivel()
+    captura = CapturaMicrofono(medidor=medidor)
+    captura.abrir()
+    captura.cerrar()
+    valores, total = medidor.desde(0)
+    assert total == 5
+    assert valores[:3] == [0.0, 0.0, 0.0]
+    assert valores[3] == pytest.approx(1000 / math.sqrt(2), rel=0.02)
