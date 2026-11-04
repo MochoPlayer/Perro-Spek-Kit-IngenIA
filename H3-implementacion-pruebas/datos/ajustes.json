@@ -1,0 +1,12 @@
+{
+  "espera_orden_s": {"valor": 5, "provisional": true, "fuente": "REQ-35 (spec.md); OPEN-02"},
+  "inactividad_demo_s": {"valor": 300, "provisional": false, "fuente": "REQ-31: T = 5 min en la demostración"},
+  "inactividad_real_s": {"valor": 900, "provisional": false, "fuente": "REQ-31: T = 15 min en uso real"},
+  "comando_reposo": {"valor": "krest", "provisional": true, "fuente": "D-11 (plan.md); OPEN-11 abierto"},
+  "comando_parada": {"valor": "d", "provisional": true, "fuente": "D-11 (plan.md); OPEN-11 abierto"},
+  "puerto": {"valor": null, "provisional": true, "fuente": "D-04, OPEN-07: sin dato en el repo; lo fija el equipo"},
+  "baudios": {"valor": 115200, "provisional": true, "fuente": "D-04, CTX-07; discrepancia X-02 (plan.md)"},
+  "max_ordenes_por_frase": {"valor": null, "provisional": true, "fuente": "D-06, P-03: por decidir; las pruebas usan 2 y 3 (SC-009)"},
+  "para_vacia_cola": {"valor": true, "provisional": true, "fuente": "D-10, OPEN-12 abierto"},
+  "fin_de_linea": {"valor": "\n", "provisional": true, "fuente": "No consta en capacidades-bittle.md; valor habitual del protocolo serie de Petoi. Confirmar en la sesión 2 (I-4)"}
+}
