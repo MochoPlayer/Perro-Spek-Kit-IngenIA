@@ -1,0 +1,10 @@
+# Modelos de voz descargados (grandes; se bajan con prototipos/motor-voz/README.md).
+H3-implementacion-pruebas/prototipos/motor-voz/modelos/
+# Nunca se sube audio (REQ-24).
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+__pycache__/
+.pytest_cache/
