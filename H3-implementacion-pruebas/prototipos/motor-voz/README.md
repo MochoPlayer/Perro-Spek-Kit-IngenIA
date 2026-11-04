@@ -6,13 +6,21 @@ Ruta propuesta en la discrepancia Y-05 y en `tasks.md` T047 y T048. **La conclus
 ## Preparar (una vez)
 
 ```powershell
-py -3.12 -m pip install -r H3-implementacion-pruebas/prototipos/motor-voz/requirements.txt
+py -3.12 -m pip install -r H3-implementacion-pruebas/requirements-voz.txt
 ```
+
+`requirements-voz.txt` vale para el prototipo y para la escucha del programa (`src/atenio/escucha.py`). Las pruebas automáticas no lo necesitan.
 
 Modelos en `prototipos/motor-voz/modelos/` (la carpeta está en `.gitignore`; no se suben):
 
 - Vosk: `vosk-model-small-es-0.42` (español, pequeño), de <https://alphacephei.com/vosk/models>. Descomprimir en `modelos/`.
-- Faster-Whisper `tiny` y `base` (int8, CPU): se bajan solos la primera vez en `modelos/`.
+- Faster-Whisper `tiny` y `base` (int8, CPU): `medir.py` los baja solo la primera vez en `modelos/` (necesita red).
+  La escucha del programa no baja nada (REQ-24): si falta el modelo, da un error con la orden para bajarlo:
+
+  ```powershell
+  cd H3-implementacion-pruebas
+  py -3.12 -c "from faster_whisper import WhisperModel; WhisperModel('base', device='cpu', compute_type='int8', download_root=r'prototipos\motor-voz\modelos')"
+  ```
 
 ## Medir
 
@@ -42,6 +50,40 @@ Opciones:
 Para seguir dentro de la frase basta el 60 % del umbral de voz: las sílabas flojas del final («-tate») no la cortan.
 
 Salida: `resultados-<fecha>.md` en esta carpeta, **solo texto** (frase, texto de cada motor, latencia, «Atenio», orden). El audio queda en memoria y se descarta (REQ-24).
+
+## Repetir la medida (T047)
+
+1. Prepara una vez (sección de arriba). Comprueba que están `modelos/vosk-model-small-es-0.42/` y `modelos/models--Systran--faster-whisper-tiny/` y `-base/`.
+2. Sala tranquila, micrófono del portátil o el que se use en la demostración. Lista los micrófonos con `--mic lista`.
+3. Prueba corta, para ver que no corta las frases: `py -3.12 -X utf8 prototipos/motor-voz/medir.py --mic --max 3`.
+4. Medida completa (27 frases, unos 10 minutos): `py -3.12 -X utf8 prototipos/motor-voz/medir.py --mic`.
+5. Sale `resultados-<fecha>.md` en esta carpeta. Súbelo y escribe la conclusión abajo (motor propuesto para P-01).
+6. I-2 (T048): tras la sesión, busca ficheros de audio nuevos: `Get-ChildItem -Recurse -Include *.wav,*.mp3,*.flac,*.ogg,*.m4a` en la carpeta de trabajo y en `$env:TEMP`.
+7. Pon el motor elegido en `datos/ajustes.json` (`voz.motor`) y, si hace falta, `silencio_s` y `prerrollo_s`.
+
+## Escucha del programa (`src/atenio/escucha.py`)
+
+El programa usa la misma cadena que `medir.py` (`CapturaMicrofono` → calibrar → `DetectorDeFrase` → transcriptor), en un hilo propio.
+`crear_escucha()` lee la sección `voz` de `datos/ajustes.json` (provisional hasta P-01):
+
+| Clave | Qué es | Valor actual |
+|---|---|---|
+| `motor` | `vosk`, `whisper-tiny`, `whisper-base` o `falso` (frases fijas, sin micrófono) | `vosk` |
+| `micro` | número de micrófono (`--mic lista`) o `null` = el de Windows | `null` |
+| `silencio_s`, `prerrollo_s` | cortes de frase, los mismos que `--silencio` y `--prerrollo` | 0,9 y 0,3 |
+| `calibrar_s` | segundos de ruido de la sala al arrancar | 1,0 |
+| `pista` | texto inicial para Whisper («Atenio»); Vosk no lo usa | `Atenio` |
+| `carpeta_modelos`, `modelo_vosk` | dónde están los modelos (relativo a `H3-implementacion-pruebas/`) | esta carpeta `modelos/` |
+
+Prueba manual del 2026-11-04 (sin hablar; solo abre el micrófono, calibra y para; cada motor en un proceso nuevo, 2 veces):
+
+| Motor | Carga del modelo | Abrir micrófono y calibrar (1 s) |
+|---|---|---|
+| `vosk` | 0,35–0,39 s | 1,26 s |
+| `whisper-tiny` | 0,64–0,68 s | 1,18–1,20 s |
+| `whisper-base` | 0,76–0,78 s | 1,20–1,22 s |
+
+Esto **no** mide aciertos ni latencia de transcripción: eso es T047.
 
 ## Qué se mide
 

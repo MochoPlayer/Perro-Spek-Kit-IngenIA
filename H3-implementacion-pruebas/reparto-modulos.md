@@ -84,7 +84,7 @@ flowchart LR
 
 ## Bloque B · Intérprete (de la voz a la orden)
 
-**Qué es**: todo lo que pasa desde que el usuario habla hasta que hay una orden: micrófono, transcripción, «Atenio», catálogo de palabras, órdenes encadenadas. **Archivos**: `src/atenio/audio.py`, `transcripcion.py`, `interprete.py`, `catalogo.py`, `datos/catalogo.json` (palabras y sinónimos), `tests/frases/`, `prototipos/motor-voz/`.
+**Qué es**: todo lo que pasa desde que el usuario habla hasta que hay una orden: micrófono, transcripción, «Atenio», catálogo de palabras, órdenes encadenadas. **Archivos**: `src/atenio/audio.py`, `transcripcion.py`, `escucha.py`, `interprete.py`, `catalogo.py`, `datos/catalogo.json` (palabras y sinónimos), `tests/frases/`, `prototipos/motor-voz/`.
 
 **Responsable**: ____ (voz: Mario)
 
@@ -92,7 +92,7 @@ flowchart LR
 |---|---|---|---|
 | ☐ | T047, T048 | Prototipo de voz: medir Vosk y Faster-Whisper con 27 frases (latencia, aciertos, si oye «Atenio»; sin audio en disco). **El script ya está hecho** en la rama `h3/perro-voz`: `prototipos/motor-voz/medir.py --mic`. Falta decir las frases y anotar el resultado. | — |
 | ☐ | — | **Elegir el motor de voz** con esa medida. | **P-01** (equipo) |
-| ☐ | T049, T050, T051 | `audio.py` y `transcripcion.py` con el motor elegido, y sus pruebas con motor falso (`test_transcripcion.py`, `test_sin_audio_en_disco.py`). **Ya hechos** en `h3/perro-voz` para los dos motores; falta fusionarlos tras P-01. | P-01 |
+| ☑ | T049, T050, T051 | `audio.py`, `transcripcion.py` y `escucha.py` (escucha continua para `principal.py`), con pruebas con motor y micrófono falsos (`test_transcripcion.py`, `test_sin_audio_en_disco.py`, `test_escucha.py`). **Hechos** en la rama `h3/voz` para Vosk y Faster-Whisper; tras P-01 solo se cambia `voz.motor` en `ajustes.json`. | P-01 (solo para cerrar T050 y T051) |
 | ☐ | T052, T053, T054 | Con voz real y robot simulado: 20 medidas de latencia (< 1,5 s), 20 intentos por orden (≥ 80 %), comprobar que no queda audio en disco. Se anota en `casos-de-prueba.md`. | T050, T051 |
 | ☐ | T020 | `tests/integracion/test_latencia_software.py`: 20 medidas con reloj real desde el texto hasta el registro del simulado, todas < 1,5 s. | — (se puede empezar ya) |
 | ☐ | T010, T011 (revisión) | **Revisar los sinónimos de `catalogo.json` y las frases de `tests/frases/`**: los escribió la IA y el reto pide que los escriba o revise el equipo. | — (equipo) |
