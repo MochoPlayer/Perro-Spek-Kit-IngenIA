@@ -110,7 +110,7 @@ flowchart LR
 
 **Responsable**: ____ (sesiones con el robot: quien tenga el Bittle)
 
-**Primero, la sesión 2 con el robot** (no depende del código; cierra P-02, P-03, P-05 y P-09). Toda sesión empieza con T068.
+**Primero, la sesión 2 con el robot** (no depende del código; cierra P-02, P-03, P-05 y P-09). Toda sesión empieza con T068. Hoja para anotar: [`H4-demostracion-aceptacion/ensayos-fisicos.md`](../H4-demostracion-aceptacion/ensayos-fisicos.md). Herramientas para mandar órdenes con un clic y cronometrar: [`verificacion-robot/`](verificacion-robot/README.md) (panel web y consola; no forman parte del programa).
 
 | ☐ | Tarea | Qué hay que hacer | Depende de |
 |---|---|---|---|
@@ -131,7 +131,7 @@ flowchart LR
 | ☐ | T062, T063 | Reposo por inactividad (T = 5 min demo / 15 min uso real). Código hecho. | **P-05** |
 | ☐ | T035, T038 (parte del gestor) | «para» vacía la cola o no. Código hecho con «vacía» (ajuste). | **P-04** |
 | ☐ | T061 | Pérdida de conexión durante una acción. Código hecho. | **P-08** |
-| ☐ | T060 | Publicar el estado de conexión como evento (para la interfaz). | — |
+| ☐ | T060 | Publicar el estado de conexión como evento (para la interfaz). **Hecho en la rama `H3-moduloC`**: `GestorAcciones.conectar()`, `publicar_estado_conexion()` y `tick()` publican `conectado`/`desconectado` (`test_gestor_estado_conexion.py`). Se cierra cuando la interfaz (T056) lo muestre. | — |
 | ☐ | T065 | Nunca enviar `G` ni `g` (giroscopio). Código hecho. | **Y-01** |
 | ☐ | T066, T067 | Órdenes opcionales: «baila», «media vuelta», «da una vuelta». | T080, **P-09**, X-07 |
 | ☐ | T072 a T079, T081 | Pruebas con el robot real y el programa completo (H4): cada orden, parada, encadenadas, desconexión, reposo, batería baja, levantarlo, giros. | T057 (bloque A), P-02 |
