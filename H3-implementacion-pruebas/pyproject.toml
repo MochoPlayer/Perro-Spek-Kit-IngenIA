@@ -1,0 +1,10 @@
+# Configuración de pytest de H3 (REQ-26: todas las pruebas sin robot ni micrófono).
+# Ejecutar desde H3-implementacion-pruebas/:  python -m pytest
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "discrepancia(id): la prueba depende de una discrepancia abierta de H2-especificacion-planificacion/discrepancias.md",
+    "pendiente(id): la prueba depende de una decisión pendiente P-NN de plan.md",
+]
