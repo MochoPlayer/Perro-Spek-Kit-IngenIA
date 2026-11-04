@@ -5,8 +5,8 @@
       "id": "REQ-02",
       "nombre": "siéntate",
       "nivel": 1,
-      "palabras": ["siéntate", "sentado", "a sentarse"],
-      "fuente_palabras": "spec.md REQ-02; sinónimos de opciones-ordenes-de-voz.md T2-13",
+      "palabras": ["siéntate", "sentado", "a sentarse", "siéntese", "sentarse", "toma asiento", "sit", "cientate", "sientante", "siéntete"],
+      "fuente_palabras": "spec.md REQ-02; sinónimos de opciones-ordenes-de-voz.md T2-13; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "ksit", "duracion_s": 2.0, "provisional": true, "fuente": "H1 §2.4: «ej. 2 s para ksit»"}
       ],
@@ -16,8 +16,8 @@
       "id": "REQ-03",
       "nombre": "levántate",
       "nivel": 1,
-      "palabras": ["levántate", "arriba"],
-      "fuente_palabras": "spec.md REQ-03; sinónimo de opciones-ordenes-de-voz.md T1-02 y H1 §2.4",
+      "palabras": ["levántate", "arriba", "levanta", "levantarse", "de pie", "ponte de pie", "ponte en pie", "en pie", "álzate", "up", "stand up", "levantante", "levántete"],
+      "fuente_palabras": "spec.md REQ-03; sinónimo de opciones-ordenes-de-voz.md T1-02 y H1 §2.4; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kup", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -60,8 +60,8 @@
       "id": "REQ-07",
       "nombre": "para",
       "nivel": 1,
-      "palabras": ["para", "stop"],
-      "fuente_palabras": "spec.md REQ-07; sinónimo de opciones-ordenes-de-voz.md T1-06",
+      "palabras": ["para", "stop", "párate", "pare", "quieto", "quieta", "estate quieto", "alto", "detente", "basta", "no te muevas"],
+      "fuente_palabras": "spec.md REQ-07; sinónimo de opciones-ordenes-de-voz.md T1-06; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010). «descansa» se queda en REQ-08",
       "pasos": [
         {"comando": "krest", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
