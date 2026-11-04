@@ -366,3 +366,27 @@ def test_otras_lineas_del_robot_no_avisan(gestor, robot):
     robot.inyectar_linea("k")
     gestor.tick()
     assert gestor.eventos.avisos == []
+
+
+# ------------------------------------------------------------------ T060, U2: estado de conexión como evento
+
+
+def test_conectar_publica_el_estado_al_arrancar():
+    reloj = RelojSimulado()
+    robot = EnlaceSimulado(reloj, conectado=False)
+    gestor = GestorAcciones(robot, reloj)
+    assert gestor.conectar() is True  # el simulado se conecta al pedirlo
+    assert gestor.eventos.textos(TipoEvento.ESTADO_CONEXION) == ["conectado"]
+
+
+def test_tick_publica_solo_los_cambios_de_conexion():
+    reloj = RelojSimulado()
+    robot = EnlaceSimulado(reloj)
+    gestor = GestorAcciones(robot, reloj)
+    gestor.tick()  # antes de conectar() no se publica nada
+    assert gestor.eventos.textos(TipoEvento.ESTADO_CONEXION) == []
+    gestor.conectar()
+    robot.simular_sin_conexion()
+    gestor.tick()
+    gestor.tick()
+    assert gestor.eventos.textos(TipoEvento.ESTADO_CONEXION) == ["conectado", "desconectado"]
