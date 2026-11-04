@@ -1,0 +1,12 @@
+# REQ-13: 10 órdenes con «Atenio» que no están en el catálogo → FUERA_DEL_CATALOGO y aviso.
+# Borrador de la IA: lo revisa el equipo (tasks.md T011).
+Atenio, sígueme
+Atenio, bailoteo
+Atenio, salta
+Atenio, ven aquí
+Atenio, haz el muerto
+Atenio, voltereta
+Atenio, busca la pelota
+Atenio, corre
+Atenio, gira noventa grados
+Atenio, rueda
