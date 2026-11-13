@@ -5,8 +5,8 @@
       "id": "REQ-02",
       "nombre": "siéntate",
       "nivel": 1,
-      "palabras": ["siéntate", "sentado", "a sentarse", "siéntese", "sentarse", "toma asiento", "sit", "cientate", "sientante", "siéntete"],
-      "fuente_palabras": "spec.md REQ-02; sinónimos de opciones-ordenes-de-voz.md T2-13; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["siéntate", "sentado", "a sentarse", "siéntese", "sentarse", "toma asiento", "sit", "cientate", "sientante", "siéntete", "siéntate por favor", "siéntate ya", "ponte sentado", "ponte sentada", "sit down", "sienta", "siente", "sentadito", "sentado ya", "a sentar", "te sientas", "centate", "sintate", "siéntate ahí", "siéntate aquí", "sientese ya"],
+      "fuente_palabras": "spec.md REQ-02; sinónimos de opciones-ordenes-de-voz.md T2-13; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "ksit", "duracion_s": 2.0, "provisional": true, "fuente": "H1 §2.4: «ej. 2 s para ksit»"}
       ],
@@ -16,8 +16,8 @@
       "id": "REQ-03",
       "nombre": "levántate",
       "nivel": 1,
-      "palabras": ["levántate", "arriba", "levanta", "levantarse", "de pie", "ponte de pie", "ponte en pie", "en pie", "álzate", "up", "stand up", "levantante", "levántete"],
-      "fuente_palabras": "spec.md REQ-03; sinónimo de opciones-ordenes-de-voz.md T1-02 y H1 §2.4; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["levántate", "arriba", "levanta", "levantarse", "de pie", "ponte de pie", "ponte en pie", "en pie", "álzate", "up", "stand up", "levantante", "levántete", "levántate por favor", "levántate ya", "levántese", "arriba ya", "de pie ya", "ponte recto", "stand", "get up", "levanta te", "lebantate", "ponte derecho", "alza", "arriba perrito", "a levantarse", "en pie ya"],
+      "fuente_palabras": "spec.md REQ-03; sinónimo de opciones-ordenes-de-voz.md T1-02 y H1 §2.4; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kup", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -27,8 +27,8 @@
       "id": "REQ-04",
       "nombre": "camina",
       "nivel": 1,
-      "palabras": ["camina", "adelante", "anda", "avanza", "ve adelante", "ve hacia delante", "hacia adelante", "hacia delante", "delante", "marcha", "walk", "forward", "camino", "caminar", "andar", "avanzar"],
-      "fuente_palabras": "spec.md REQ-04; sinónimo de opciones-ordenes-de-voz.md T1-03; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["camina", "adelante", "anda", "avanza", "ve adelante", "ve hacia delante", "hacia adelante", "hacia delante", "delante", "marcha", "walk", "forward", "camino", "caminar", "andar", "avanzar", "camina hacia delante", "camina hacia adelante", "camina recto", "camina por favor", "camina ya", "sigue adelante", "ve para adelante", "ve para delante", "anda para adelante", "echa a andar", "echa a caminar", "ponte a caminar", "ponte a andar", "a caminar", "a andar", "empieza a caminar", "camine", "ande", "avance", "caminando", "adelante ya", "paso adelante", "go", "go forward", "move forward", "walk forward", "camina un poco", "al frente"],
+      "fuente_palabras": "spec.md REQ-04; sinónimo de opciones-ordenes-de-voz.md T1-03; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkF", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, R-04)"}
       ],
@@ -38,8 +38,8 @@
       "id": "REQ-05",
       "nombre": "izquierda",
       "nivel": 1,
-      "palabras": ["izquierda", "a la izquierda", "gira izquierda", "hacia la izquierda", "gira a izquierda", "left", "turn left", "izquierdas"],
-      "fuente_palabras": "spec.md REQ-05; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["izquierda", "a la izquierda", "gira izquierda", "hacia la izquierda", "gira a izquierda", "left", "turn left", "izquierdas", "girar izquierda", "ve a izquierda", "hacia izquierda", "por la izquierda", "izquierdo", "a izquierdas", "izquierda ya", "go left", "move left", "gira izquierda ya", "ve izquierda", "vete izquierda", "tuerce izquierda", "dobla izquierda", "giro izquierda"],
+      "fuente_palabras": "spec.md REQ-05; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, OPEN-04)"}
       ],
@@ -49,8 +49,8 @@
       "id": "REQ-06",
       "nombre": "derecha",
       "nivel": 1,
-      "palabras": ["derecha", "a la derecha", "gira derecha", "hacia la derecha", "gira a derecha", "right", "turn right", "derechas"],
-      "fuente_palabras": "spec.md REQ-06; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["derecha", "a la derecha", "gira derecha", "hacia la derecha", "gira a derecha", "right", "turn right", "derechas", "girar derecha", "ve a derecha", "hacia derecha", "por la derecha", "derecho", "a derechas", "derecha ya", "go right", "move right", "gira derecha ya", "ve derecha", "vete derecha", "tuerce derecha", "dobla derecha", "giro derecha"],
+      "fuente_palabras": "spec.md REQ-06; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkR", "duracion_s": null, "provisional": true, "fuente": "marcha continua: tiempo de marcha por fijar (D-06, OPEN-04)"}
       ],
@@ -60,8 +60,8 @@
       "id": "REQ-07",
       "nombre": "para",
       "nivel": 1,
-      "palabras": ["para", "stop", "párate", "pare", "quieto", "quieta", "estate quieto", "alto", "detente", "basta", "no te muevas"],
-      "fuente_palabras": "spec.md REQ-07; sinónimo de opciones-ordenes-de-voz.md T1-06; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010). «descansa» se queda en REQ-08",
+      "palabras": ["para", "stop", "párate", "pare", "quieto", "quieta", "estate quieto", "alto", "detente", "basta", "no te muevas", "para ya", "párate ya", "pare ya", "para por favor", "detente ya", "frena", "frenar", "frenando", "parar", "pararse", "quédate quieto", "quédate quieta", "estate quieta", "estate quieto ya", "quieto ya", "alto ahí", "alto ya", "stop ya", "stop it", "estop", "freeze", "hold", "stay", "deja de moverte", "para de moverte", "detenerse"],
+      "fuente_palabras": "spec.md REQ-07; sinónimo de opciones-ordenes-de-voz.md T1-06; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010). «descansa» se queda en REQ-08",
       "pasos": [
         {"comando": "krest", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -71,8 +71,8 @@
       "id": "REQ-08",
       "nombre": "túmbate",
       "nivel": 1,
-      "palabras": ["túmbate", "descansa", "échate", "acuéstate", "al suelo", "tumbarse", "túmbese", "túmbete", "lie down", "down", "rest"],
-      "fuente_palabras": "spec.md REQ-08; sinónimo de opciones-ordenes-de-voz.md T1-07; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["túmbate", "descansa", "échate", "acuéstate", "al suelo", "tumbarse", "túmbese", "túmbete", "lie down", "down", "rest", "túmbate ya", "túmbate por favor", "échate ya", "échate al suelo", "échate un rato", "acuéstate ya", "acuéstate por favor", "ponte tumbado", "ponte tumbada", "a descansar", "ve a descansar", "descansar", "descansa un poco", "descansa ya", "relájate", "tumba", "tumbado", "tumbada", "echado", "acostado", "tumbate ahí", "lay down", "lie", "tumbarte", "al suelo ya"],
+      "fuente_palabras": "spec.md REQ-08; sinónimo de opciones-ordenes-de-voz.md T1-07; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "d", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -82,8 +82,8 @@
       "id": "REQ-09",
       "nombre": "saluda",
       "nivel": 1,
-      "palabras": ["saluda", "hola", "saludo", "saludar", "di hola", "saluda al público", "hello", "hi", "salúdame"],
-      "fuente_palabras": "spec.md REQ-09; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["saluda", "hola", "saludo", "saludar", "di hola", "saluda al público", "hello", "hi", "salúdame", "saluda por favor", "saluda ya", "di hola ya", "dile hola", "dinos hola", "saluda a todos", "saludos", "salude", "saludando", "hey", "hello there", "say hi", "say hello", "wave", "hola hola", "buenas", "buenos días", "buenas tardes", "buenas noches", "saluda al profesor", "salúdanos"],
+      "fuente_palabras": "spec.md REQ-09; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "khi", "duracion_s": null, "provisional": true, "fuente": "sin dato; comando por confirmar en el robot (OPEN-03)"}
       ],
@@ -93,8 +93,8 @@
       "id": "REQ-10",
       "nombre": "equilíbrate",
       "nivel": 1,
-      "palabras": ["equilíbrate", "equilibrio", "equilibra", "equilibrarse", "mantén el equilibrio", "balance", "balancéate"],
-      "fuente_palabras": "spec.md REQ-10; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["equilíbrate", "equilibrio", "equilibra", "equilibrarse", "mantén el equilibrio", "balance", "balancéate", "equilíbrate ya", "equilíbrate por favor", "equilibra te", "equilibrio ya", "mantente en equilibrio", "mantén equilibrio", "mantente equilibrado", "equilibrado", "balancea", "balancearse", "balancea te", "balanceo", "keep balance", "balance yourself", "equilibre", "equilíbrese", "haz equilibrio", "haz el equilibrio", "ponte en equilibrio", "no te caigas", "mantén el balance"],
+      "fuente_palabras": "spec.md REQ-10; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kbalance", "duracion_s": null, "provisional": true, "fuente": "sin dato; por medir (I-4)"}
       ],
@@ -104,8 +104,8 @@
       "id": "REQ-11",
       "nombre": "trota",
       "nivel": 1,
-      "palabras": ["trota", "trotar", "trote", "a trote", "trot", "run", "trotando"],
-      "fuente_palabras": "spec.md REQ-11; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["trota", "trotar", "trote", "a trote", "trot", "run", "trotando", "trota ya", "trota por favor", "trota rápido", "trota un poco", "trotar un poco", "ponte a trotar", "a trotar", "jog", "jogging", "troto", "trotes", "trotte", "trotecito", "al trote", "sal a trotar", "trota hacia delante"],
+      "fuente_palabras": "spec.md REQ-11; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "ktrF", "duracion_s": null, "provisional": true, "fuente": "marcha continua; comando por confirmar en el robot (OPEN-03)"}
       ],
@@ -115,8 +115,8 @@
       "id": "REQ-14",
       "nombre": "baila",
       "nivel": 2,
-      "palabras": ["baila", "bailar", "baile", "a bailar", "ponte a bailar", "dance", "vaila", "baila un poco"],
-      "fuente_palabras": "spec.md REQ-14; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["baila", "bailar", "baile", "a bailar", "ponte a bailar", "dance", "vaila", "baila un poco", "baila ya", "baila por favor", "baila para mí", "baila para nosotros", "bailemos", "bailotea", "bailando", "haz un baile", "haz un bailecito", "echa un baile", "mueve el esqueleto", "mueve el cuerpo", "danza", "danzar", "dance dance", "let's dance", "báilame", "bayla", "baila algo", "baila un baile", "baile ya", "bailes", "a bailar ya", "dancing"],
+      "fuente_palabras": "spec.md REQ-14; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [],
       "notas": "Secuencia sin definir (OPEN-08, P-09). Sin pasos, el intérprete la trata como orden no disponible (REQ-13).",
       "interrumpe": false
@@ -125,8 +125,8 @@
       "id": "REQ-15",
       "nombre": "media vuelta",
       "nivel": 2,
-      "palabras": ["media vuelta", "da media vuelta", "date media vuelta", "dame media vuelta", "gira media vuelta", "medio giro", "half turn"],
-      "fuente_palabras": "spec.md REQ-15; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["media vuelta", "da media vuelta", "date media vuelta", "dame media vuelta", "gira media vuelta", "medio giro", "half turn", "media vuelta ya", "haz media vuelta", "hacer media vuelta", "dar media vuelta", "date la vuelta", "gírate", "vuélvete", "turn around", "turn back", "media buelta", "da media buelta", "medio giro ya", "vuelta atrás"],
+      "fuente_palabras": "spec.md REQ-15; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"}
       ],
@@ -137,8 +137,8 @@
       "id": "REQ-16",
       "nombre": "da una vuelta",
       "nivel": 2,
-      "palabras": ["da una vuelta", "date una vuelta", "dame una vuelta", "vuelta completa", "gira sobre ti", "da un giro", "spin"],
-      "fuente_palabras": "spec.md REQ-16; resto: propuesta de Mario/Claude 04/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
+      "palabras": ["da una vuelta", "date una vuelta", "dame una vuelta", "vuelta completa", "gira sobre ti", "da un giro", "spin", "dar una vuelta", "gira en redondo", "gira en círculo", "gira en circulos", "vuelta entera", "una vuelta", "una vuelta completa", "giro completo", "date un giro", "da una vueltecita", "una vueltecita", "da una buelta", "spin around", "full turn", "vuelta completa ya"],
+      "fuente_palabras": "spec.md REQ-16; resto: propuesta de Mario/Claude 04/11 y 13/11 (sinónimos y errores típicos del reconocedor), por probar con el micrófono y aprobar por el equipo (T010)",
       "pasos": [
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"},
         {"comando": "kwkL", "duracion_s": null, "provisional": true, "fuente": "duración calibrada del giro por medir (OPEN-04)"}
